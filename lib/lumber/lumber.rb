@@ -1,0 +1,47 @@
+module Lumber
+
+  # Initializes log4r system.  Needs to happen in
+  # config/environment.rb before Rails::Initializer.run
+  # Options:
+  # :root (defaults to RAILS_ROOT if defined)
+  # :env (defaults to RAILS_ENV if defined)
+  # :log_file (defaults to <root>}/log/<env>.log)
+  def init(opts = {})
+    opts[:root] ||= RAILS_ROOT if defined?(RAILS_ROOT)
+    opts[:env] ||= RAILS_ENV if defined?(RAILS_ENV)
+    opts[:log_file] ||= "#{opts[:root]}/log/#{opts[:env]}.log"
+    raise "Lumber.init missing one of :root, :env" unless opts[:root] && opts[:env]
+
+    cfg = Log4r::YamlConfigurator
+    opts.each do |k, v|
+      cfg[k] = v
+    end
+    cfg.load_yaml_file(File.join(opts[:root], 'config', 'log4r.yml'))
+
+    # Workaround for rails bug: http://dev.rubyonrails.org/ticket/8665
+    if defined?(RAILS_DEFAULT_LOGGER)
+      Object.send(:remove_const, :RAILS_DEFAULT_LOGGER)
+    end
+    Object.const_set('RAILS_DEFAULT_LOGGER', Log4r::Logger['rails'])
+
+  end
+
+  # Makes :logger exist independently for subclasses and sets that logger
+  # to one that inherits from base_class for each subclass as its created
+  def setup_logger_heirarchy(base_class, parent_fullname)
+    base_class.class_eval do
+      class_inheritable_accessor :logger
+      self.logger = Log4r::Logger.new(parent_fullname)
+
+      class << self
+        def inherited_with_log4r(subclass)
+          inherited_without_log4r(subclass)
+          subclass.logger = Log4r::Logger.new("#{logger.fullname}::#{subclass.name}")
+        end
+        alias_method_chain :inherited, :log4r
+      end
+
+    end
+  end
+
+end

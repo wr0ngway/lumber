@@ -1,0 +1,5 @@
+Description:
+    Prepares the rails application for using log4 by installing sample configuration
+
+Examples:
+    ./script/generate lumber
