@@ -49,7 +49,7 @@ module Lumber
   #
   # causes all models that get created to have a log4r logger named
   # "rails::models::<class_name>".  This class can individually be
-  # put into debug log mode in production (see log4r docs), and log
+  # put into debug log mode in production (see {log4r docs}[http://log4r.sourceforge.net/manual.html]), and log
   # output will include "<class_name>" on every log from this class
   # so that you can tell where a log statement came from
   #

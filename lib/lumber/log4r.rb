@@ -24,7 +24,7 @@ class Log4r::Logger
     end
   end
 
-  # Convenience method to use exception_logger plugin to save important exceptions
+  # Convenience method for logging exceptions
   def log_exception(exception, details = {})
     details = details.stringify_keys
     max = details.keys.max { |a,b| a.length <=> b.length }

@@ -1,11 +1,11 @@
 = lumber
 
-Lumber tries to make it easy to use the more robust log4r logging system within your rails application.
+Lumber tries to make it easy to use the more robust log4r[http://log4r.sourceforge.net/] logging system within your rails application.
 To do this it sets up log4r configuration from a yml file, and provides utility methods for adding a
 :logger accessor to classes dynamically as they get created.  In the default setup shown below, calls
 to logger from a model/controller/mailer, will include that classes name in the log output.
 
-To use it, install the wr0ngway-lumber gem, run the lumber generator, then make the following edits
+To use it, first "gem install lumber", run the lumber generator (./script generate lumber) to get the log4r.yml config file, then make the following edits
 to config/environment.rb:
 
   # before Rails::Initializer.run
@@ -28,6 +28,8 @@ If you want to change the log level for a different environment, add a line like
   # Set info as the default log level for production
   Log4r::Logger.root.level = Log4r::INFO
 
+You should be able to use lumber in a non-rails project too, but your call to Lumber.init will need to be different.
+I don't currently need to do this, so let me know if you have any problems.
 
 == Copyright
 
