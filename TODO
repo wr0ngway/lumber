@@ -1,0 +1,2 @@
+* Add hook to allow tweaking log level for a running process
+* Add web app to access tweaking of log levels

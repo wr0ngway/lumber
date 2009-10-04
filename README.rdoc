@@ -1,17 +1,33 @@
 = lumber
 
-Description goes here.
+Lumber tries to make it easy to use the more robust log4r logging system within your rails application.
+To do this it sets up log4r configuration from a yml file, and provides utility methods for adding a
+:logger accessor to classes dynamically as they get created.  In the default setup shown below, calls
+to logger from a model/controller/mailer, will include that classes name in the log output.
 
-== Note on Patches/Pull Requests
- 
-* Fork the project.
-* Make your feature addition or bug fix.
-* Add tests for it. This is important so I don't break it in a
-  future version unintentionally.
-* Commit, do not mess with rakefile, version, or history.
-  (if you want to have your own version, that is fine but
-   bump version in a commit by itself I can ignore when I pull)
-* Send me a pull request. Bonus points for topic branches.
+To use it, install the wr0ngway-lumber gem, run the lumber generator, then make the following edits
+to config/environment.rb:
+
+  # before Rails::Initializer.run
+  #
+  require 'lumber'
+  Lumber.init()
+
+  # Inside the block for Rails::Initializer.run
+  #
+  config.after_initialize do
+    # setup log4r heirarchy - these need to happen after frameworks
+    # are loaded, but before subclasses get defined
+    Lumber.setup_logger_heirarchy(ActiveRecord::Base, "rails::models")
+    Lumber.setup_logger_heirarchy(ActionController::Base, "rails::controllers")
+    Lumber.setup_logger_heirarchy(ActionMailer::Base, "rails::mailers")
+  end
+
+If you want to change the log level for a different environment, add a line like below to the config/environments/<env>.rb
+
+  # Set info as the default log level for production
+  Log4r::Logger.root.level = Log4r::INFO
+
 
 == Copyright
 

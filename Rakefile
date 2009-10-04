@@ -5,13 +5,14 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "lumber"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
-    gem.email = "wr0ngway@yahoo.com"
+    gem.summary = %Q{Lumber integrates the log4r logging system within your application.}
+    gem.description = %Q{Lumber tries to make it easy to use the more robust log4r logging system within your rails application.  To do this it sets up log4r configuration from a yml file, and provides utility methods for adding a :logger accessor to classes dynamicaly as they get created.}
+    gem.email = "matt@conwaysplace.com"
     gem.homepage = "http://github.com/wr0ngway/lumber"
     gem.authors = ["Matt Conway"]
     gem.add_development_dependency "thoughtbot-shoulda"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+    gem.add_dependency "log4r"
+    gem.files =  FileList["[A-Z][A-Z]*", "{generators,lib}/**/*"]
   end
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
