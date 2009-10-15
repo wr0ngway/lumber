@@ -44,7 +44,7 @@ module Lumber
   end
 
   # Makes :logger exist independently for subclasses and sets that logger
-  # to one that inherits from base_class for each subclass as its created.
+  # to one that inherits from base_class for each subclass as it is created.
   # This allows you to have a finer level of control over logging, for example,
   # put just a single class, or hierarchy of classes, into debug log level
   #
@@ -70,6 +70,8 @@ module Lumber
 
   private
 
+  # Adds a inheritance handler to Object so we can know to add loggers
+  # for classes as they get defined.
   def self.register_inheritance_handler()
     return if defined?(Object.inherited_with_lumber_log4r)
     
@@ -78,8 +80,9 @@ module Lumber
 
         def inherited_with_lumber_log4r(subclass)
           inherited_without_lumber_log4r(subclass)
-          # p "#{self} -> #{subclass} -> #{self.logger}"
 
+          # if the new class is in the list that were registered directly,
+          # then create their logger attribute directly
           logger_name = @@registered_loggers[subclass.name]
           if logger_name
             subclass.class_eval do
@@ -87,6 +90,9 @@ module Lumber
               self.logger = Log4r::Logger.new(logger_name)
             end
           else
+            # otherwise, walk up the classes hierarchy till you find a logger
+            # that was registered, and use that logger as the parent for the
+            # logger of the new class
             parent = subclass.superclass
             while ! parent.nil?
               if defined?(parent.logger) && parent.logger
