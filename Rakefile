@@ -12,6 +12,7 @@ begin
     gem.authors = ["Matt Conway"]
     gem.add_development_dependency "thoughtbot-shoulda"
     gem.add_dependency "log4r"
+    gem.add_dependency "active_support"
     gem.files =  FileList["[A-Z][A-Z]*", "{generators,lib}/**/*"]
   end
   Jeweler::GemcutterTasks.new
@@ -111,6 +112,13 @@ task :changelog do
   end
 
   # Commit and push
-  sh "echo git ci -m'Updated changelog' #{changelog_file}"
-  sh "echo git push #{changelog_file}"
+  sh "git ci -m'Updated changelog' #{changelog_file}"
+  sh "git push"
+end
+
+task :my_release do
+  version.bump.patch
+  release
+  changelog
+  gemcutter.release
 end

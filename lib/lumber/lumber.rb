@@ -1,4 +1,7 @@
 require "socket"
+require "active_support/core_ext/duplicable"
+require "active_support/core_ext/class"
+require "active_support/core_ext/module"
 
 module Lumber
 
@@ -36,6 +39,8 @@ module Lumber
     end
     Object.const_set('RAILS_DEFAULT_LOGGER', Log4r::Logger['rails'])
 
+    @@registered_loggers = {}
+    self.register_inheritance_handler()
   end
 
   # Makes :logger exist independently for subclasses and sets that logger
@@ -45,7 +50,7 @@ module Lumber
   #
   # for example:
   #
-  #   Lumber.setup_logger_hierarchy(ActiveRecord::Base, "rails::models")
+  #   Lumber.setup_logger_hierarchy("ActiveRecord::Base", "rails::models")
   #
   # causes all models that get created to have a log4r logger named
   # "rails::models::<class_name>".  This class can individually be
@@ -53,32 +58,49 @@ module Lumber
   # output will include "<class_name>" on every log from this class
   # so that you can tell where a log statement came from
   #
-  def self.setup_logger_hierarchy(base_class, parent_fullname)
-    base_class.class_eval do
-      class_inheritable_accessor :logger
-      self.logger = Log4r::Logger.new(parent_fullname)
+  def self.setup_logger_hierarchy(class_name, class_logger_fullname)
+    @@registered_loggers[class_name] = class_logger_fullname
+    if Object.const_defined?(class_name)
+      Object.const_get(class_name).class_eval do
+        class_inheritable_accessor :logger
+        self.logger = Log4r::Logger.new(class_logger_fullname)
+      end
+    end
+  end
 
+  private
+
+  def self.register_inheritance_handler()
+    return if defined?(Object.inherited_with_lumber_log4r)
+    
+    Object.class_eval do
       class << self
+
         def inherited_with_lumber_log4r(subclass)
           inherited_without_lumber_log4r(subclass)
           # p "#{self} -> #{subclass} -> #{self.logger}"
 
-          # Look up the class hierarchy for a useable logger
-          # A class may have a nil logger if it was created
-          # before we add logger/inheritance to its superclas,
-          # e.g. Object/Exception - something tries to subclass
-          # Exception after we added lumber_inherited to Object,
-          # but Exception was defined before we added lumber_inherited 
-          while self.logger.nil?
-            next_class = (next_class ||self).superclass
-            if next_class.nil?
-              self.logger = Log4r::Logger.root
-            else
-              self.logger = next_class.logger
+          logger_name = @@registered_loggers[subclass.name]
+          if logger_name
+            subclass.class_eval do
+              class_inheritable_accessor :logger
+              self.logger = Log4r::Logger.new(logger_name)
+            end
+          else
+            parent = subclass.superclass
+            while ! parent.nil?
+              if defined?(parent.logger) && parent.logger
+                parent_is_registered = @@registered_loggers.values.find {|v| parent.logger.fullname.index(v) == 0}
+                if parent_is_registered
+                  subclass.logger = Log4r::Logger.new("#{parent.logger.fullname}::#{subclass.name}")
+                  break
+                end
+              end
+              parent = parent.superclass
             end
           end
-          subclass.logger = Log4r::Logger.new("#{logger.fullname}::#{subclass.name}")
         end
+        
         alias_method_chain :inherited, :lumber_log4r
       end
 
