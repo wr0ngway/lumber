@@ -41,11 +41,11 @@ module Lumber
   # Makes :logger exist independently for subclasses and sets that logger
   # to one that inherits from base_class for each subclass as its created.
   # This allows you to have a finer level of control over logging, for example,
-  # put just a single class, or heirarchy of classes, into debug log level
+  # put just a single class, or hierarchy of classes, into debug log level
   #
   # for example:
   #
-  #   Lumber.setup_logger_heirarchy(ActiveRecord::Base, "rails::models")
+  #   Lumber.setup_logger_hierarchy(ActiveRecord::Base, "rails::models")
   #
   # causes all models that get created to have a log4r logger named
   # "rails::models::<class_name>".  This class can individually be
@@ -53,7 +53,7 @@ module Lumber
   # output will include "<class_name>" on every log from this class
   # so that you can tell where a log statement came from
   #
-  def self.setup_logger_heirarchy(base_class, parent_fullname)
+  def self.setup_logger_hierarchy(base_class, parent_fullname)
     base_class.class_eval do
       class_inheritable_accessor :logger
       self.logger = Log4r::Logger.new(parent_fullname)
@@ -61,6 +61,22 @@ module Lumber
       class << self
         def inherited_with_lumber_log4r(subclass)
           inherited_without_lumber_log4r(subclass)
+          # p "#{self} -> #{subclass} -> #{self.logger}"
+
+          # Look up the class hierarchy for a useable logger
+          # A class may have a nil logger if it was created
+          # before we add logger/inheritance to its superclas,
+          # e.g. Object/Exception - something tries to subclass
+          # Exception after we added lumber_inherited to Object,
+          # but Exception was defined before we added lumber_inherited 
+          while self.logger.nil?
+            next_class = (next_class ||self).superclass
+            if next_class.nil?
+              self.logger = Log4r::Logger.root
+            else
+              self.logger = next_class.logger
+            end
+          end
           subclass.logger = Log4r::Logger.new("#{logger.fullname}::#{subclass.name}")
         end
         alias_method_chain :inherited, :lumber_log4r

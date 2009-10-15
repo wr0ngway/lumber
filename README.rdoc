@@ -13,14 +13,17 @@ to config/environment.rb:
   require 'lumber'
   Lumber.init()
 
+  # If you really want all classes to have a logger
+  # Lumber.setup_logger_hierarchy(Object, "root::object")
+
   # Inside the block for Rails::Initializer.run
   #
   config.after_initialize do
-    # setup log4r heirarchy - these need to happen after frameworks
+    # setup log4r hierarchy - these need to happen after frameworks
     # are loaded, but before subclasses get defined
-    Lumber.setup_logger_heirarchy(ActiveRecord::Base, "rails::models")
-    Lumber.setup_logger_heirarchy(ActionController::Base, "rails::controllers")
-    Lumber.setup_logger_heirarchy(ActionMailer::Base, "rails::mailers")
+    Lumber.setup_logger_hierarchy(ActiveRecord::Base, "rails::models")
+    Lumber.setup_logger_hierarchy(ActionController::Base, "rails::controllers")
+    Lumber.setup_logger_hierarchy(ActionMailer::Base, "rails::mailers")
   end
 
 If you want to change the log level for a different environment, add a line like below to the config/environments/<env>.rb
