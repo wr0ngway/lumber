@@ -14,6 +14,7 @@ begin
     gem.add_dependency "log4r"
     gem.files =  FileList["[A-Z][A-Z]*", "{generators,lib}/**/*"]
   end
+  Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
 end
