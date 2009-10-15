@@ -1,3 +1,11 @@
+0.0.2
+-----
+
+changelogs <a68ba93> [Matt Conway]
+changelogs <380cbf3> [Matt Conway]
+add jeweller gemcutter support <da96329> [Matt Conway]
+fix spelling on hierarchy, handle missing loggers in class hierarchy <1e4e3c0> [Matt Conway]
+
 0.0.1
 -----
 
