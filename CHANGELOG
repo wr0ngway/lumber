@@ -1,3 +1,10 @@
+0.9.0
+-----
+
+get working with nested classes, prevent rails from overriding logger <b9fecdd> [Matt Conway]
+some doc changes <334f2de> [Matt Conway]
+add dependency to ActiveSupport, Refactor to remove dependency on load order, Add tests <beb8769> [Matt Conway]
+
 0.0.2
 -----
 
