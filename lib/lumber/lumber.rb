@@ -60,8 +60,21 @@ module Lumber
   #
   def self.setup_logger_hierarchy(class_name, class_logger_fullname)
     @@registered_loggers[class_name] = class_logger_fullname
-    if Object.const_defined?(class_name)
-      Object.const_get(class_name).class_eval do
+
+    obj = nil
+    names = class_name.split '::'
+    names.each do |name|
+      root ||= Object
+      if root.const_defined?(name)
+        obj = root.const_get(name)
+        root = obj
+      else
+        obj = nil
+      end
+    end
+
+    if obj
+      obj.class_eval do
         class_inheritable_accessor :logger
         self.logger = Log4r::Logger.new(class_logger_fullname)
       end
@@ -76,40 +89,64 @@ module Lumber
     return if defined?(Object.inherited_with_lumber_log4r)
     
     Object.class_eval do
+      
       class << self
 
         def inherited_with_lumber_log4r(subclass)
           inherited_without_lumber_log4r(subclass)
 
           # if the new class is in the list that were registered directly,
-          # then create their logger attribute directly
+          # then create their logger attribute directly, otherwise derive it
           logger_name = @@registered_loggers[subclass.name]
           if logger_name
-            subclass.class_eval do
-              class_inheritable_accessor :logger
-              self.logger = Log4r::Logger.new(logger_name)
-            end
+            Lumber.add_lumber_logger(subclass, logger_name)
           else
-            # otherwise, walk up the classes hierarchy till you find a logger
-            # that was registered, and use that logger as the parent for the
-            # logger of the new class
-            parent = subclass.superclass
-            while ! parent.nil?
-              if defined?(parent.logger) && parent.logger
-                parent_is_registered = @@registered_loggers.values.find {|v| parent.logger.fullname.index(v) == 0}
-                if parent_is_registered
-                  subclass.logger = Log4r::Logger.new("#{parent.logger.fullname}::#{subclass.name}")
-                  break
-                end
-              end
-              parent = parent.superclass
-            end
+            Lumber.derive_lumber_logger(subclass)
           end
         end
         
         alias_method_chain :inherited, :lumber_log4r
+
       end
 
+    end
+
+  end
+
+  def self.add_lumber_logger(clazz, logger_name)
+    clazz.class_eval do
+
+      class_inheritable_accessor :logger
+      self.logger = Log4r::Logger.new(logger_name)
+
+      class << self
+
+        # Prevent rails from overwriting our logger
+        def cattr_accessor_with_lumber_log4r(*syms)
+          without_logger = syms.reject {|s| s == :logger}
+          cattr_accessor_without_lumber_log4r(*without_logger)
+        end
+        alias_method_chain :cattr_accessor, :lumber_log4r
+
+      end
+
+    end
+  end
+
+  def self.derive_lumber_logger(clazz)
+    # otherwise, walk up the classes hierarchy till you find a logger
+    # that was registered, and use that logger as the parent for the
+    # logger of the new class
+    parent = clazz.superclass
+    while ! parent.nil?
+      if defined?(parent.logger) && parent.logger
+        parent_is_registered = @@registered_loggers.values.find {|v| parent.logger.fullname.index(v) == 0}
+        if parent_is_registered
+          clazz.logger = Log4r::Logger.new("#{parent.logger.fullname}::#{clazz.name}")
+          break
+        end
+      end
+      parent = parent.superclass
     end
   end
 

@@ -1,10 +1,13 @@
 require 'test_helper'
 
 
-def new_class(class_name, super_class=nil)
+def new_class(class_name, super_class=nil, super_module=nil)
   s = "class #{class_name}"
   s << " < #{super_class}" if super_class
   s << "; end"
+
+  s = "module #{super_module}; #{s}; end" if super_module
+  
   eval s
 end
 
@@ -25,8 +28,8 @@ class LumberTest < Test::Unit::TestCase
   end
 
   def assert_valid_logger(class_name, logger_name)
-    assert Object.const_defined?(class_name)
-    clazz = Object.const_get(class_name)
+    clazz = eval class_name
+    assert clazz
     assert clazz.respond_to?(:logger)
     lgr = clazz.logger
     assert lgr.instance_of?(Log4r::Logger)
@@ -43,6 +46,24 @@ class LumberTest < Test::Unit::TestCase
     Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
     new_class('Foo1')
     assert_valid_logger('Foo1', "root::foo1")
+  end
+
+  should "prevent cattr_accessor for a class registered before the class is defined" do
+    assert !defined?(Foo1)
+    Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
+    new_class('Foo1')
+    Foo1.class_eval do
+      cattr_accessor :logger, :foo
+    end
+    assert defined?(Foo1.foo)
+    assert_valid_logger('Foo1', "root::foo1")
+  end
+
+  should "allow registering logger for a nested class before the class is defined" do
+    assert !defined?(Bar1::Foo1)
+    Lumber.setup_logger_hierarchy("Bar1::Foo1", "root::foo1")
+    new_class('Foo1', nil, 'Bar1')
+    assert_valid_logger('Bar1::Foo1', "root::foo1")
   end
 
   should "allow registering logger for a class after the class is defined" do
