@@ -10,7 +10,7 @@ begin
     gem.email = "matt@conwaysplace.com"
     gem.homepage = "http://github.com/wr0ngway/lumber"
     gem.authors = ["Matt Conway"]
-    gem.add_development_dependency "thoughtbot-shoulda"
+    gem.add_development_dependency "shoulda"
     gem.add_dependency "log4r"
     gem.add_dependency "activesupport"
     gem.files =  FileList["[A-Z][A-Z]*", "{generators,lib}/**/*"]
