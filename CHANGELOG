@@ -1,3 +1,11 @@
+0.9.2
+-----
+
+custom task <a280ac8> [Matt Conway]
+handle logger delegation, a.l.a. ActionView->ActionController <54aa99a> [Matt Conway]
+extra test <0504aa9> [Matt Conway]
+use canonical gem <1e6d3f9> [Matt Conway]
+
 0.9.1
 -----
 
