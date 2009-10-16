@@ -48,6 +48,17 @@ class LumberTest < Test::Unit::TestCase
     assert_valid_logger('Foo1', "root::foo1")
   end
 
+  should "allow registering independent loggers for classes in a hierarchy" do
+    assert !defined?(Foo1)
+    assert !defined?(Foo2)
+    Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
+    Lumber.setup_logger_hierarchy("Foo2", "root::foo2")
+    new_class('Foo1')
+    new_class('Foo2', 'Foo1')
+    assert_valid_logger('Foo1', "root::foo1")
+    assert_valid_logger('Foo2', "root::foo2")
+  end
+
   should "prevent cattr_accessor for a class registered before the class is defined" do
     assert !defined?(Foo1)
     Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
