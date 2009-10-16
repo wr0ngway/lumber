@@ -48,6 +48,19 @@ class LumberTest < Test::Unit::TestCase
     assert_valid_logger('Foo1', "root::foo1")
   end
 
+  should "not register new logger for subclasses of classes that delegate logger" do
+    assert !defined?(Foo1) # ActionController::Base
+    assert !defined?(Foo2) # ActionView::Base
+    assert !defined?(Foo3) # Subclass of ActionView::Base
+    Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
+    eval "class ::Foo1; end"
+    eval "class ::Foo2; delegate :logger, :to => Foo1; end"
+    eval "class ::Foo3 < Foo2; end"
+    assert_valid_logger('Foo1', "root::foo1")
+    assert Foo2.new.logger == Foo1.logger
+    assert Foo3.new.logger == Foo1.logger
+  end
+
   should "allow registering independent loggers for classes in a hierarchy" do
     assert !defined?(Foo1)
     assert !defined?(Foo2)

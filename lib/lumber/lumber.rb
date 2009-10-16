@@ -139,7 +139,7 @@ module Lumber
     # logger of the new class
     parent = clazz.superclass
     while ! parent.nil?
-      if defined?(parent.logger) && parent.logger
+      if parent.method_defined?(:logger) && parent.method_defined?(:logger=) && parent.logger
         parent_is_registered = @@registered_loggers.values.find {|v| parent.logger.fullname.index(v) == 0}
         if parent_is_registered
           clazz.logger = Log4r::Logger.new("#{parent.logger.fullname}::#{clazz.name}")
