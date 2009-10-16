@@ -12,7 +12,7 @@ begin
     gem.authors = ["Matt Conway"]
     gem.add_development_dependency "thoughtbot-shoulda"
     gem.add_dependency "log4r"
-    gem.add_dependency "active_support"
+    gem.add_dependency "activesupport"
     gem.files =  FileList["[A-Z][A-Z]*", "{generators,lib}/**/*"]
   end
   Jeweler::GemcutterTasks.new
