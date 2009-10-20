@@ -1,5 +1,5 @@
 require 'test_helper'
-
+require 'delegate'
 
 def new_class(class_name, super_class=nil, super_module=nil)
   s = "class #{class_name}"
@@ -59,6 +59,18 @@ class LumberTest < Test::Unit::TestCase
     assert_valid_logger('Foo1', "root::foo1")
     assert Foo2.new.logger == Foo1.logger
     assert Foo3.new.logger == Foo1.logger
+  end
+
+  should "no logger when parent is via delegate class" do
+    assert !defined?(Foo1)
+    assert !defined?(Foo2)
+    assert !defined?(Foo3)
+    Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
+    eval "class ::Foo1; end"
+    eval "class ::Foo2 < DelegateClass(Foo1); end"
+    eval "class ::Foo3 < Foo2; end"
+    assert_valid_logger('Foo1', "root::foo1")
+    assert ! defined?(Foo3.logger)
   end
 
   should "allow registering independent loggers for classes in a hierarchy" do
