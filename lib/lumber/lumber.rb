@@ -1,5 +1,13 @@
 require "socket"
-require "active_support/core_ext/duplicable"
+
+begin
+  # rails(active_support) 2
+  require "active_support/core_ext/duplicable"
+rescue LoadError
+  # rails(active_support) 3
+  require "active_support/core_ext/object/duplicable"
+end
+
 require "active_support/core_ext/class"
 require "active_support/core_ext/module"
 
@@ -19,7 +27,7 @@ module Lumber
   # configurator for use in defining outputters
   #
   def self.init(opts = {})
-    opts[:root] ||= RAILS_ROOT if defined?(RAILS_ROOT)
+    opts[:root] ||= RAILS_ROOT.to_s if defined?(RAILS_ROOT)
     opts[:env] ||= RAILS_ENV if defined?(RAILS_ENV)
     opts[:config_file] ||= "#{opts[:root]}/config/log4r.yml"
     opts[:log_file] ||= "#{opts[:root]}/log/#{opts[:env]}.log"
