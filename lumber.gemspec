@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{lumber}
-  s.version = "0.9.4"
+  s.version = "0.9.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Matt Conway"]
-  s.date = %q{2010-06-25}
+  s.date = %q{2010-07-01}
   s.description = %q{Lumber tries to make it easy to use the more robust log4r logging system within your rails application.  To do this it sets up log4r configuration from a yml file, and provides utility methods for adding a :logger accessor to classes dynamicaly as they get created.}
   s.email = %q{matt@conwaysplace.com}
   s.extra_rdoc_files = [
@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
      "generators/lumber/templates/log4r.yml",
      "lib/lumber.rb",
      "lib/lumber/log4r.rb",
+     "lib/lumber/logger_support.rb",
      "lib/lumber/lumber.rb"
   ]
   s.homepage = %q{http://github.com/wr0ngway/lumber}
@@ -36,7 +37,8 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{Lumber integrates the log4r logging system within your application.}
   s.test_files = [
-    "test/lumber_test.rb",
+    "test/logger_support_test.rb",
+     "test/lumber_test.rb",
      "test/test_helper.rb"
   ]
 
