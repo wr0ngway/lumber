@@ -13,6 +13,9 @@ require "active_support/core_ext/module"
 
 module Lumber
 
+  # name of top level logger (can't be root as you can't have outputters on root)
+  BASE_LOGGER= 'rails'
+
   # Initializes log4r system.  Needs to happen in
   # config/environment.rb before Rails::Initializer.run
   #
@@ -45,7 +48,7 @@ module Lumber
     if defined?(RAILS_DEFAULT_LOGGER)
       Object.send(:remove_const, :RAILS_DEFAULT_LOGGER)
     end
-    Object.const_set('RAILS_DEFAULT_LOGGER', Log4r::Logger['rails'])
+    Object.const_set('RAILS_DEFAULT_LOGGER', Log4r::Logger[BASE_LOGGER])
 
     @@registered_loggers = {}
     self.register_inheritance_handler()
