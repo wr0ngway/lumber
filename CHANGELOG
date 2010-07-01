@@ -1,3 +1,9 @@
+0.9.5
+-----
+
+add ability to define loggers by including a module <566c88c> [Matt Conway]
+ruby 1.9 fix <db07d8f> [Matt Conway]
+
 0.9.4
 -----
 
