@@ -2,8 +2,15 @@ require 'test_helper.rb'
 
 class LoggerSupportTest < Test::Unit::TestCase
 
+  def setup
+    root = "#{File.dirname(__FILE__)}/.."
+    Lumber.init(:root => root,
+                :env => 'test',
+                :config_file => "#{root}/generators/lumber/templates/log4r.yml",
+                :log_file => "/tmp/lumber-test.log")
+  end
+
   def teardown
-    Log4r::Logger::Repository.instance.loggers.clear
     LoggerSupportTest.constants.grep(/^Foo/).each do |c|
       LoggerSupportTest.send(:remove_const, c)
     end
@@ -11,10 +18,10 @@ class LoggerSupportTest < Test::Unit::TestCase
 
   should "create logger for chain" do
     class Foo; include Lumber::LoggerSupport; end
-    assert_equal Log4r::Logger["rails::LoggerSupportTest::Foo"], Foo.logger
-    assert_equal Log4r::Logger["rails::LoggerSupportTest"], Foo.logger.parent
-    assert_equal Log4r::Logger["rails"], Foo.logger.parent.parent
-    assert_equal Log4r::Logger.root, Foo.logger.parent.parent.parent
+    class Bar < Foo; end;
+    assert_equal Foo.logger, Log4r::Logger["rails::LoggerSupportTest::Foo"]
+    assert_equal Bar.logger, Log4r::Logger["rails::LoggerSupportTest::Foo::Bar"]
+    assert_equal Bar.logger.parent, Log4r::Logger["rails::LoggerSupportTest::Foo"]
   end
 
   should "have a logger instance accessible from an instance method" do

@@ -1,5 +1,7 @@
 require "socket"
 
+require "active_support/core_ext/string/inflections"
+
 begin
   # rails(active_support) 2
   require "active_support/core_ext/duplicable"
@@ -72,23 +74,18 @@ module Lumber
   def self.setup_logger_hierarchy(class_name, class_logger_fullname)
     @@registered_loggers[class_name] = class_logger_fullname
 
-    obj = nil
-    names = class_name.split '::'
-    names.each do |name|
-      root ||= Object
-      if root.const_defined?(name)
-        obj = root.const_get(name)
-        root = obj
-      else
-        obj = nil
-      end
-    end
+    begin
+      clazz = class_name.constantize
 
-    if obj
-      obj.class_eval do
-        class_inheritable_accessor :logger
-        self.logger = Log4r::Logger.new(class_logger_fullname)
+      if clazz.respond_to? :class_inheritable_accessor
+        clazz.class_eval do
+          class_inheritable_accessor :logger
+          self.logger = Log4r::Logger.new(class_logger_fullname)
+        end
       end
+
+    rescue NameError
+      # The class hasn't been defined yet.  No problem, we've registered the logger for when the class is created.
     end
   end
 
@@ -98,9 +95,9 @@ module Lumber
   # for classes as they get defined.
   def self.register_inheritance_handler()
     return if defined?(Object.inherited_with_lumber_log4r)
-    
+
     Object.class_eval do
-      
+
       class << self
 
         def inherited_with_lumber_log4r(subclass)
@@ -115,7 +112,7 @@ module Lumber
             Lumber.derive_lumber_logger(subclass)
           end
         end
-        
+
         alias_method_chain :inherited, :lumber_log4r
 
       end
@@ -126,7 +123,6 @@ module Lumber
 
   def self.add_lumber_logger(clazz, logger_name)
     clazz.class_eval do
-
       class_inheritable_accessor :logger
       self.logger = Log4r::Logger.new(logger_name)
 
@@ -153,7 +149,7 @@ module Lumber
       parent_logger_name = parent.logger.fullname rescue ''
       parent_is_registered = @@registered_loggers.values.find {|v| parent_logger_name.index(v) == 0}
       if parent_is_registered && parent.method_defined?(:logger=)
-        clazz.logger = Log4r::Logger.new("#{parent_logger_name}::#{clazz.name}")
+        clazz.logger = Log4r::Logger.new("#{parent_logger_name}::#{clazz.name.nil? ? 'anonymous' : clazz.name.split('::').last}")
         break
       end
       parent = parent.superclass
