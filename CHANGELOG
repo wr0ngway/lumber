@@ -1,3 +1,8 @@
+0.9.6
+-----
+
+Made LoggerSupport module actually set up inherited loggers. <6758d73> [Kevin Menard]
+
 0.9.5
 -----
 

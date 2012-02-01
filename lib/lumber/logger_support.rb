@@ -5,22 +5,9 @@ module Lumber
   module LoggerSupport
 
     def self.included(receiver)
-      receiver.class_eval do
-        class_inheritable_accessor :logger
-        last_logger = nil
-        name_parts = self.name.split("::")
-        name_parts.insert(0, Lumber::BASE_LOGGER)
-        name_parts.each_with_index do |part, i|
-          partial = name_parts[0..i].join("::")
-          last_logger = Log4r::Logger[partial]
-          if ! last_logger
-            last_logger = Log4r::Logger.new(partial)
-          end
-        end
-        self.logger = last_logger
-      end
+      Lumber.setup_logger_hierarchy(receiver.name, "#{Lumber::BASE_LOGGER}::#{receiver.name}")
     end
 
   end
-  
+
 end
