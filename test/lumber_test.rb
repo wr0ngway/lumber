@@ -146,7 +146,11 @@ class LumberTest < Test::Unit::TestCase
     Lumber.setup_logger_hierarchy("Foo1", "root::Foo1")
     new_class('Foo3', 'Foo2')
     assert_valid_logger('Foo1', "root::Foo1")
-    assert !defined?(Foo2.logger) || Foo2.logger.nil?
+    # this will behave differently depending on the version of ActiveSupport being used. on ActiveSupport >= 3.2, we use class_attribute to define
+    # the logger method, which will cause subclasses to fall back to the parent class's logger if one isn't defined (Foo2.logger == Foo1.logger)
+    # if on ActiveSupport < 3.2, we use class_inheritable_accessor, which will leave the logger undefined in the subclass unless LoggerSupport
+    # is explicitly included
+    assert (!defined?(Foo2.logger) || Foo2.logger.nil?) || (Foo2.logger == Foo1.logger)
     assert_valid_logger('Foo3', "root::Foo1::Foo3")
   end
   
