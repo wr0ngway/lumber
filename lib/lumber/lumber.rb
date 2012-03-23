@@ -10,8 +10,15 @@ rescue LoadError
   require "active_support/core_ext/object/duplicable"
 end
 
-require "active_support/core_ext/class"
-require "active_support/core_ext/module"
+begin
+  # attempt to explicitly load ActiveSupport::Deprecation for rails 3.2 (needed for active_support/core_ext/module)
+  # this doesn't appear to be necessary for earlier versions of rails (and may raise a LoadError)
+  require "active_support/deprecation"
+ensure
+  require "active_support/core_ext/class"
+  require "active_support/core_ext/module"
+end
+
 
 module Lumber
 
@@ -77,10 +84,16 @@ module Lumber
     begin
       clazz = class_name.constantize
 
-      if clazz.respond_to? :class_inheritable_accessor
-        clazz.class_eval do
-          class_inheritable_accessor :logger
-          self.logger = Log4r::Logger.new(class_logger_fullname)
+      # ActiveSupport 3.2 introduced class_attribute, which is supposed to be used instead of class_inheritable_accessor if available
+      [:class_attribute, :class_inheritable_accessor].each do |class_attribute_method|
+
+        if clazz.respond_to? class_attribute_method
+          clazz.class_eval do
+            send class_attribute_method, :logger
+            self.logger = Log4r::Logger.new(class_logger_fullname)
+          end
+
+          break
         end
       end
 
@@ -123,7 +136,13 @@ module Lumber
 
   def self.add_lumber_logger(clazz, logger_name)
     clazz.class_eval do
-      class_inheritable_accessor :logger
+      # ActiveSupport 3.2 introduced class_attribute, which is supposed to be used instead of class_inheritable_accessor if available
+      if respond_to? :class_attribute
+        class_attribute :logger
+      else
+        class_inheritable_accessor :logger
+      end
+
       self.logger = Log4r::Logger.new(logger_name)
 
       class << self
