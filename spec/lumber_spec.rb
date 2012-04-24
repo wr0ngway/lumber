@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'delegate'
 
 describe Lumber do
 
