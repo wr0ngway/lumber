@@ -1,17 +1,17 @@
 require 'spec_helper'
 require 'delegate'
 
+def new_class(class_name, super_class=nil, super_module=nil)
+  s = "class #{class_name}"
+  s << " < #{super_class}" if super_class
+  s << "; end"
+
+  s = "module #{super_module}; #{s}; end" if super_module
+
+  eval s
+end
+  
 describe Lumber do
-
-  def new_class(class_name, super_class=nil, super_module=nil)
-    s = "class #{class_name}"
-    s << " < #{super_class}" if super_class
-    s << "; end"
-
-    s = "module #{super_module}; #{s}; end" if super_module
-
-    eval s
-  end
 
   before(:each) do
     root = "#{File.dirname(__FILE__)}/.."
