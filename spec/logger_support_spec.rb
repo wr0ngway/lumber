@@ -25,19 +25,42 @@ describe Lumber::LoggerSupport do
   end
 
   it "should have a logger instance accessible from an instance method" do
-    logger = stub()
-    logger.should_receive(:debug).with('hi')
-    Log4r::Logger.should_receive(:new).and_return(logger)
     class Foo; include Lumber::LoggerSupport; def member_method; logger.debug('hi'); end; end
+    logger = Log4r::Logger["rails::Foo"]
+    logger.should_receive(:debug).with('hi')
     Foo.new.member_method
   end
 
   it "should have a logger instance accessible from a class method " do
-    logger = stub()
-    logger.should_receive(:debug).with('hi')
-    Log4r::Logger.should_receive(:new).and_return(logger)
     class Foo; include Lumber::LoggerSupport; def self.class_method; logger.debug('hi'); end; end
+    logger = Log4r::Logger["rails::Foo"]
+    logger.should_receive(:debug).with('hi')
     Foo.class_method
   end
 
+  it "should allow configuration of levels from yml" do
+    yml = <<-EOF
+      log4r_config:
+        pre_config:
+          root:
+            level: 'DEBUG'
+        loggers:
+          - name: "rails::Foo"
+            level: WARN
+        outputters: []
+    EOF
+    
+    cfg = Log4r::YamlConfigurator
+    cfg.load_yaml_string(yml)
+    logger = Log4r::Logger['rails::Foo']
+    sio = StringIO.new 
+    logger.outputters = [Log4r::IOOutputter.new("sbout", sio)]
+    class Foo; include Lumber::LoggerSupport; end
+    
+    Foo.logger.debug("noshow")
+    Foo.logger.warn("yesshow")
+    sio.string.should =~ /yesshow/
+    sio.string.should_not =~ /noshow/
+  end
+    
 end

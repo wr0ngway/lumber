@@ -63,6 +63,10 @@ module Lumber
     self.register_inheritance_handler()
   end
 
+  def self.find_or_create_logger(fullname)
+    Log4r::Logger[fullname] || Log4r::Logger.new(fullname)
+  end
+  
   # Makes :logger exist independently for subclasses and sets that logger
   # to one that inherits from base_class for each subclass as it is created.
   # This allows you to have a finer level of control over logging, for example,
@@ -90,7 +94,7 @@ module Lumber
         if clazz.respond_to? class_attribute_method
           clazz.class_eval do
             send class_attribute_method, :logger
-            self.logger = Log4r::Logger.new(class_logger_fullname)
+            self.logger = Lumber.find_or_create_logger(class_logger_fullname)
           end
 
           break
@@ -143,7 +147,7 @@ module Lumber
         class_inheritable_accessor :logger
       end
 
-      self.logger = Log4r::Logger.new(logger_name)
+      self.logger = Lumber.find_or_create_logger(logger_name)
 
       class << self
 
@@ -168,7 +172,8 @@ module Lumber
       parent_logger_name = parent.logger.fullname rescue ''
       parent_is_registered = @@registered_loggers.values.find {|v| parent_logger_name.index(v) == 0}
       if parent_is_registered && parent.method_defined?(:logger=)
-        clazz.logger = Log4r::Logger.new("#{parent_logger_name}::#{clazz.name.nil? ? 'anonymous' : clazz.name.split('::').last}")
+        fullname = "#{parent_logger_name}::#{clazz.name.nil? ? 'anonymous' : clazz.name.split('::').last}"
+        clazz.logger = Lumber.find_or_create_logger(fullname)
         break
       end
       parent = parent.superclass
