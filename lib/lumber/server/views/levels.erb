@@ -1,0 +1,77 @@
+
+<h1>Logger Levels</h1>
+<p>
+  The table below shows the log levels currently overriden.  You can add/remove overrides and apply them, and they will remain active for the given ttl.
+</p>
+
+<form action="/levels" method="POST">
+
+  <label>TTL (seconds)</label>
+  <input type="text" name="ttl" value="<%= @ttl %>" />
+  
+  <table class='levels'>
+    <tr>
+      <th>Name</th>
+      <th>Level</th>
+      <th></th>
+    </tr>
+    <% @levels.each do |name, level| %>
+      <%
+         @logger_name = name
+         @logger_level = level
+      %>
+      <%=  erb :_levels_row %>
+    <% end %>
+  </table>
+
+  <a href="#add" class="add">Add</a>
+  <input type="submit" value="Apply"/>
+
+</form>
+
+<table id="row_template" style="display:none">
+  <%
+     @logger_name = ""
+     @logger_level = ""
+  %>
+  <%=  erb :_levels_row %>
+</table>
+
+<script type="text/javascript" charset="utf-8">
+  
+  jQuery(document).ready(function() {
+    var typeahead_logger_names = <%=  lnames = []; Log4r::Logger.each {|name, logger| lnames << name }; lnames.inspect %>;
+    var typeahead_logger_levels = <%= Log4r::LNAMES.inspect %>;
+    
+    $('input[name="levels[][name]"]').typeahead({source: typeahead_logger_names})
+    $('input[name="levels[][level]"]').typeahead({source: typeahead_logger_levels})
+  });
+  
+  function markDirty()
+  {
+    $("input[type=submit]").css({border:"3px orange solid"});
+  }
+  
+  jQuery(function($) {
+
+    $("input").live("keypress", markDirty);
+    
+    $("a.add").live("click", function(e) {
+      e.preventDefault();
+      var $table = $("table.levels");
+      var $newRow = $("#row_template tr.line:first").clone();
+      $newRow.find("input[type=text]").attr("value", "");
+      $newRow.find("td.expanded").html("")
+      $newRow.appendTo($table);
+      markDirty();
+    });
+
+    $("a.remove").live("click", function(e) {
+      e.preventDefault();
+      var $link = $(this);
+      $link.parents("tr").remove();
+      markDirty();
+    });
+ 
+  });
+</script>

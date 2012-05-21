@@ -17,10 +17,14 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency("log4r", "~> 1.1.10")
   gem.add_dependency("activesupport")
-
+  gem.add_dependency("sinatra")
+  
   gem.add_development_dependency("rake")
   gem.add_development_dependency("rspec")
+  gem.add_development_dependency("capybara")
+  gem.add_development_dependency("capybara-webkit")
   gem.add_development_dependency("awesome_print")
+  gem.add_development_dependency("sinatra-contrib")
   # gem.add_development_dependency("simplecov")
 
 end

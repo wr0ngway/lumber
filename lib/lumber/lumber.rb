@@ -61,6 +61,8 @@ module Lumber
 
     @@registered_loggers = {}
     self.register_inheritance_handler()
+    
+    LevelUtil.cache = RAILS_CACHE if defined?(RAILS_CACHE)
   end
 
   def self.find_or_create_logger(fullname)
