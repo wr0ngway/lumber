@@ -54,6 +54,7 @@ If you want to change the log level for a different environment, you can do so i
 
 Lumber also comes with a Sinatra UI for dynamically overriding log levels at runtime.  To use it, just run Lumber::Server as a rack application.  The easiest way to do this is to map it to a route in your rails routes.rb (make sure you password protect it):
 
+    require 'lumber/server'
     mount Lumber::Server, :at => "/lumber"
 
 This will allow you to temporarily set lower log levels for specific loggers - e.g. if you want a specific model to have DEBUG logging for the next hour.  For this to work, you need to activat
