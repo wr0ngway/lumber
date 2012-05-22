@@ -3,6 +3,12 @@ require 'spec_helper'
 describe Lumber::LevelUtil do
   
   before(:each) do
+    # clear out loggers
+    Log4r::Logger::Repository.instance.instance_eval do
+      @loggers.delete_if {|k, v| k !~ /root|global/} 
+    end
+    
+    # re-initialize lumber
     root = "#{File.dirname(__FILE__)}/.."
     Lumber.init(:root => root,
                 :env => 'test',
@@ -60,6 +66,10 @@ describe Lumber::LevelUtil do
   end
   
   it "starts a monitor thread" do
+    LevelUtil.set_levels({"foo" => "DEBUG"})
+    LevelUtil.activate_levels
+    Log4r::Logger["foo"].level.should == Log4r::LNAMES.index("DEBUG")
+    
     thread = LevelUtil.start_monitor(0.1)
     thread.should_not be_nil
     thread.should be_alive
@@ -68,6 +78,7 @@ describe Lumber::LevelUtil do
     LevelUtil.set_levels({"foo" => "ERROR"})
     sleep 0.2
     Log4r::Logger["foo"].level.should == Log4r::LNAMES.index("ERROR")
+    thread.kill
   end
   
 end
