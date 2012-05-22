@@ -1,3 +1,18 @@
+0.11.0 (05/22/2012)
+-------------------
+
+better initialization through rails mechanisms <29222cb>
+fix docs, add monitor thread <d0381ab>
+fix urls, typeahead, non-dev mode <47b9de6>
+update copyright date <507a2b6>
+update TODO <fa3e36c>
+remove dead file <bb0476e>
+tweak ui <8eaa8f9>
+add ability to dynamically change logger levels, with webui to do so <6ebf9dd>
+fix to allow overriding specific logger levels in yml <4a1e076>
+Merge pull request #2 from backupify/rails_3.2 <534fa82>
+since rails 3.2 has removed the class_inheritable_attribute call, we have to use the new class_attribute call to define loggers instead <3c6cd4a>
+
 0.9.6
 -----
 
