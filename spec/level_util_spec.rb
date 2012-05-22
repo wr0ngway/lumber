@@ -59,4 +59,15 @@ describe Lumber::LevelUtil do
     Log4r::Logger["bar"].level.should == Log4r::LNAMES.index("DEBUG")
   end
   
+  it "starts a monitor thread" do
+    thread = LevelUtil.start_monitor(0.1)
+    thread.should_not be_nil
+    thread.should be_alive
+    
+    Log4r::Logger["foo"].level.should == Log4r::LNAMES.index("DEBUG")
+    LevelUtil.set_levels({"foo" => "ERROR"})
+    sleep 0.2
+    Log4r::Logger["foo"].level.should == Log4r::LNAMES.index("ERROR")
+  end
+  
 end

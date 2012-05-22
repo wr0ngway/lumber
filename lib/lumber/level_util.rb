@@ -19,17 +19,19 @@ module Lumber
       end
     end
     
-    # where to persist the log level mappings
+    # @return [MemoryCacheProvider] Where to persist the log level mappings (Rails.cache interface), defaults to Memory
+    attr_accessor :cache_provider
     @cache_provider = MemoryCacheProvider.new
-    # time in seconds till the overrides expires
+    
+    # @return [Integer] The time in seconds till the overrides expires, defaults to 3600
+    attr_accessor :ttl
     @ttl = 3600
-
-    attr_accessor :cache_provider, :ttl
     
     # Sets the logger level overrides into the cache_provider so that we can temporarily use
     # a lower level for specific loggers to aid in debugging
     #
     # @param [Hash] Logger fullname mapping to level name, e.g. {'rails::models::User' => 'DEBUG'}
+    #
     def set_levels(levels)
       backup_levels(levels.keys)
       @cache_provider.write(LOG_LEVELS_KEY, levels, :expire_in => @ttl)
@@ -42,6 +44,7 @@ module Lumber
     # Activates previously set logger level overrides.  Should be called 
     # at code entry points, e.g. an ApplicationController before_filter,
     # or Resque::Worker callback
+    #
     def activate_levels
       levels = get_levels
       if levels.size == 0
@@ -55,6 +58,26 @@ module Lumber
       end
     end
 
+    # Convenience method for starting a thread to watch for changes in log
+    # levels and apply them.  You don't need to use this if you are manually
+    # calling activate levels at all your entry points.
+    #
+    # @param [Integer] How long to sleep between checks
+    # @return [Thread] The monitor thread
+    #
+    def start_monitor(interval=10)
+      Thread.new do
+        loop do
+          begin
+            activate_levels
+          rescue => e
+            $stderr.puts "Failure activating log levels: #{e}"
+          end
+          sleep interval
+        end
+      end
+    end
+    
     protected
     
     @original_levels = {}

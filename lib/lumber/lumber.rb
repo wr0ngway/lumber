@@ -34,6 +34,9 @@ module Lumber
   # * :env - defaults to RAILS_ENV if defined
   # * :config_file - defaults to <root>}/config/log4r.yml
   # * :log_file - defaults to <root>}/log/<env>.log
+  # * :monitor_enabled - defaults to true
+  # * :monitor_interval - defaults to 60
+  # * :monitor_store - defaults to Rails.cache if defined, memory otherwise, see Lumber::LevelUtil::MemoryCacheProvider for interface
   #
   # All config options get passed through to the log4r
   # configurator for use in defining outputters
@@ -43,11 +46,14 @@ module Lumber
     opts[:env] ||= RAILS_ENV if defined?(RAILS_ENV)
     opts[:config_file] ||= "#{opts[:root]}/config/log4r.yml"
     opts[:log_file] ||= "#{opts[:root]}/log/#{opts[:env]}.log"
+    opts[:monitor_enabled] ||= true
+    opts[:monitor_interval] ||= 60
+    
     raise "Lumber.init missing one of :root, :env" unless opts[:root] && opts[:env]
 
     cfg = Log4r::YamlConfigurator
     opts.each do |k, v|
-      cfg[k.to_s] = v
+      cfg[k.to_s] = v.to_s
     end
     cfg['hostname'] = Socket.gethostname
 
@@ -62,7 +68,12 @@ module Lumber
     @@registered_loggers = {}
     self.register_inheritance_handler()
     
-    LevelUtil.cache = RAILS_CACHE if defined?(RAILS_CACHE)
+    if opts[:monitor_store]
+      LevelUtil.cache = opts[:monitor_store]
+    elsif defined?(RAILS_CACHE)
+      LevelUtil.cache = RAILS_CACHE
+    end
+    LevelUtil.start_monitor(opts[:monitor_interval]) if opts[:monitor_enabled]
   end
 
   def self.find_or_create_logger(fullname)
