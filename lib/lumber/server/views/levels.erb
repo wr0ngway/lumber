@@ -4,7 +4,7 @@
   The table below shows the log levels currently overriden.  You can add/remove overrides and apply them, and they will remain active for the given ttl.
 </p>
 
-<form action="/levels" method="POST">
+<form action="<%= url(:levels) %>" method="POST">
 
   <label>TTL (seconds)</label>
   <input type="text" name="ttl" value="<%= @ttl %>" />
@@ -38,11 +38,11 @@
 </table>
 
 <script type="text/javascript" charset="utf-8">
+
+  var typeahead_logger_names = <%=  lnames = []; Log4r::Logger.each {|name, logger| lnames << name }; lnames.inspect %>;
+  var typeahead_logger_levels = <%= Log4r::LNAMES.inspect %>;
   
   jQuery(document).ready(function() {
-    var typeahead_logger_names = <%=  lnames = []; Log4r::Logger.each {|name, logger| lnames << name }; lnames.inspect %>;
-    var typeahead_logger_levels = <%= Log4r::LNAMES.inspect %>;
-    
     $('input[name="levels[][name]"]').typeahead({source: typeahead_logger_names})
     $('input[name="levels[][level]"]').typeahead({source: typeahead_logger_levels})
   });
@@ -63,6 +63,8 @@
       $newRow.find("input[type=text]").attr("value", "");
       $newRow.find("td.expanded").html("")
       $newRow.appendTo($table);
+      $newRow.find('input[name="levels[][name]"]').typeahead({source: typeahead_logger_names})
+      $newRow.find('input[name="levels[][level]"]').typeahead({source: typeahead_logger_levels})
       markDirty();
     });
 

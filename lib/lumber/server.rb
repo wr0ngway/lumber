@@ -1,19 +1,22 @@
 require 'lumber'
 require 'sinatra/base'
-require "sinatra/reloader"
 require 'erb'
 
 module Lumber
   class Server < Sinatra::Base
 
     configure :development do
-      register Sinatra::Reloader
+      begin
+        require "sinatra/reloader"
+        register Sinatra::Reloader
+      rescue LoadError
+      end
     end
 
     set :root, "#{File.dirname(File.expand_path(__FILE__))}/server"
 
     get "/" do
-      redirect to :levels
+      redirect url(:levels)
     end
     
     get "/levels" do
@@ -42,7 +45,7 @@ module Lumber
       else
         LevelUtil.set_levels(levels)
         LevelUtil.ttl = ttl
-        redirect :levels
+        redirect url(:levels)
       end
       
     end
