@@ -21,6 +21,7 @@ Gem::Specification.new do |gem|
   
   gem.add_development_dependency("rake")
   gem.add_development_dependency("rspec")
+  gem.add_development_dependency("rack-test")
   gem.add_development_dependency("capybara")
   gem.add_development_dependency("capybara-webkit")
   gem.add_development_dependency("awesome_print")

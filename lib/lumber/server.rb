@@ -43,8 +43,8 @@ module Lumber
         @ttl = ttl
         erb :levels
       else
+        LevelUtil.ttl = ttl.to_i if ttl
         LevelUtil.set_levels(levels)
-        LevelUtil.ttl = ttl
         redirect url(:levels)
       end
       

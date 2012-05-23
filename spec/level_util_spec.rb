@@ -32,18 +32,21 @@ describe Lumber::LevelUtil do
   it "creates logger if not yet defined" do
     Log4r::Logger["unknownlogger"].should be_nil
     LevelUtil.set_levels({"unknownlogger" => "DEBUG"})
+    LevelUtil.activate_levels
     Log4r::Logger["unknownlogger"].should_not be_nil
   end
   
   it "reuses logger if already defined" do
-    LevelUtil.set_levels({@name => "DEBUG"})
-    foo_logger = Log4r::Logger[@name]
+    foo_logger = Lumber.find_or_create_logger(@name)
     foo_logger.should_not be_nil
+
     LevelUtil.set_levels({@name => "INFO"})
+    LevelUtil.activate_levels
     Log4r::Logger[@name].should == foo_logger
   end
   
   it "activate level on logger" do
+    Lumber.find_or_create_logger(@name)
     LevelUtil.set_levels({@name => "ERROR"})
     Log4r::Logger[@name].level.should == Log4r::LNAMES.index("DEBUG")
     LevelUtil.activate_levels
@@ -51,15 +54,16 @@ describe Lumber::LevelUtil do
   end
   
   it "restores levels when mapping expires" do
-    LevelUtil.set_levels({"bar" => "ERROR"})
-    Log4r::Logger["bar"].level.should == Log4r::LNAMES.index("DEBUG")
-    
+    Lumber.find_or_create_logger(@name)
+    Log4r::Logger[@name].level.should == Log4r::LNAMES.index("DEBUG")
+
+    LevelUtil.set_levels({@name => "ERROR"})
     LevelUtil.activate_levels
-    Log4r::Logger["bar"].level.should == Log4r::LNAMES.index("ERROR")
+    Log4r::Logger[@name].level.should == Log4r::LNAMES.index("ERROR")
 
     LevelUtil.set_levels({})
     LevelUtil.activate_levels
-    Log4r::Logger["bar"].level.should == Log4r::LNAMES.index("DEBUG")
+    Log4r::Logger[@name].level.should == Log4r::LNAMES.index("DEBUG")
   end
   
   it "starts a monitor thread" do

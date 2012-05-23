@@ -1,11 +1,16 @@
 require 'spec_helper'
 
 describe Lumber::Server, :type => :request do
-
+  include Rack::Test::Methods
+  
   before(:each) do
     Capybara.app = Lumber::Server.new
   end
 
+  def app
+    @app ||= Lumber::Server.new
+  end
+  
   it "should respond to it's url" do
     visit "/levels"
     page.should have_content('Logger Levels')
@@ -46,6 +51,13 @@ describe Lumber::Server, :type => :request do
     visit "/levels"
 
     page.should have_selector('form')
+  end
+  
+  it "uses ttl set in current request" do
+    Lumber.find_or_create_logger("foo")
+    LevelUtil.cache_provider.should_receive(:write).with(LevelUtil::LOG_LEVELS_KEY, {"foo" => "INFO"}, :expires_in => 55)
+
+    post "/levels", {'ttl' => 55, 'levels' => [{'name' => "foo", "level" => "INFO"}]}
   end
     
   it "assigns level overrides", :js => true do

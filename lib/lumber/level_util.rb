@@ -33,8 +33,7 @@ module Lumber
     # @param [Hash] Logger fullname mapping to level name, e.g. {'rails::models::User' => 'DEBUG'}
     #
     def set_levels(levels)
-      backup_levels(levels.keys)
-      @cache_provider.write(LOG_LEVELS_KEY, levels, :expire_in => @ttl)
+      @cache_provider.write(LOG_LEVELS_KEY, levels, :expires_in => @ttl)
     end
     
     def get_levels()
@@ -50,6 +49,7 @@ module Lumber
       if levels.size == 0
         restore_levels
       else
+        backup_levels(levels.keys)
         levels.each do |name, level|
           logger = Lumber.find_or_create_logger(name)
           level_val = Log4r::LNAMES.index(level)
