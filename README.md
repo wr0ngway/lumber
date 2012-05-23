@@ -57,7 +57,7 @@ Lumber also comes with a Sinatra UI for dynamically overriding log levels at run
     require 'lumber/server'
     mount Lumber::Server, :at => "/lumber"
 
-This will allow you to temporarily set lower log levels for specific loggers - e.g. if you want a specific model to have DEBUG logging for the next hour.  For this to work, you need to activat
+This will allow you to temporarily set lower log levels for specific loggers - e.g. if you want a specific model to have DEBUG logging for the next hour.
 
 
 Copyright
