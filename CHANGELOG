@@ -1,3 +1,9 @@
+0.11.1 (05/23/2012)
+-------------------
+
+document require statement for server <116b17d>
+use ttl when set in same post, only backup/restore levels from activate_levels, not set_levels <05140c1>
+
 0.11.0 (05/22/2012)
 -------------------
 
