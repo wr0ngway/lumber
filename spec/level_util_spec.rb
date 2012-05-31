@@ -45,12 +45,26 @@ describe Lumber::LevelUtil do
     Log4r::Logger[@name].should == foo_logger
   end
   
-  it "activate level on logger" do
+  it "activates level on logger" do
     Lumber.find_or_create_logger(@name)
     LevelUtil.set_levels({@name => "ERROR"})
     Log4r::Logger[@name].level.should == Log4r::LNAMES.index("DEBUG")
     LevelUtil.activate_levels
     Log4r::Logger[@name].level.should == Log4r::LNAMES.index("ERROR")
+  end
+  
+  it "activates level on outputter" do
+    logger = Lumber.find_or_create_logger(@name)
+    sio = StringIO.new 
+    outputter = Log4r::IOOutputter.new("sbout", sio)
+    logger.outputters = [outputter]
+        
+    LevelUtil.set_levels({"sbout" => "ERROR"})
+    Log4r::Logger[@name].level.should == Log4r::LNAMES.index("DEBUG")
+    outputter.level.should == Log4r::LNAMES.index("DEBUG")
+    LevelUtil.activate_levels
+    Log4r::Logger[@name].level.should == Log4r::LNAMES.index("DEBUG")
+    outputter.level.should == Log4r::LNAMES.index("ERROR")
   end
   
   it "restores levels when mapping expires" do
@@ -64,6 +78,42 @@ describe Lumber::LevelUtil do
     LevelUtil.set_levels({})
     LevelUtil.activate_levels
     Log4r::Logger[@name].level.should == Log4r::LNAMES.index("DEBUG")
+  end
+  
+  it "restores levels on outputter when mapping expires" do
+    logger = Lumber.find_or_create_logger(@name)
+    sio = StringIO.new 
+    outputter = Log4r::IOOutputter.new("sbout", sio)
+    logger.outputters = [outputter]
+
+    outputter.level.should == Log4r::LNAMES.index("DEBUG")
+
+    LevelUtil.set_levels({"sbout" => "ERROR"})
+    LevelUtil.activate_levels
+    outputter.level.should == Log4r::LNAMES.index("ERROR")
+
+    LevelUtil.set_levels({})
+    LevelUtil.activate_levels
+    outputter.level.should == Log4r::LNAMES.index("DEBUG")
+  end
+  
+  it "doesn't set levels if already set" do
+    logger = Lumber.find_or_create_logger(@name)
+    sio = StringIO.new 
+    outputter = Log4r::IOOutputter.new("sbout", sio)
+    logger.outputters = [outputter]
+
+    outputter.level.should == Log4r::LNAMES.index("DEBUG")
+    Log4r::Logger[@name].level.should == Log4r::LNAMES.index("DEBUG")
+    
+    outputter.should_not_receive(:level=)
+    Log4r::Logger[@name].should_not_receive(:level=)
+    
+    LevelUtil.set_levels({"sbout" => "DEBUG", @name => "DEBUG"})
+    LevelUtil.activate_levels
+    
+    LevelUtil.set_levels({})
+    LevelUtil.activate_levels
   end
   
   it "starts a monitor thread" do

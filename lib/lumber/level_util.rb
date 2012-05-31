@@ -51,9 +51,14 @@ module Lumber
       else
         backup_levels(levels.keys)
         levels.each do |name, level|
-          logger = Lumber.find_or_create_logger(name)
           level_val = Log4r::LNAMES.index(level)
-          logger.level = level_val if level_val
+          outputter = Log4r::Outputter[name]
+          if outputter
+            outputter.level = level_val if level_val && outputter.level != level_val
+          else
+            logger = Lumber.find_or_create_logger(name)
+            logger.level = level_val if level_val && logger.level != level_val
+          end
         end
       end
     end
@@ -81,6 +86,7 @@ module Lumber
     protected
     
     @original_levels = {}
+    @original_outputter_levels = {}
     
     # Backs up original values of logger levels before we overwrite them
     # This is better in local memory since we shouldn't reset loggers that we haven't set
@@ -88,9 +94,14 @@ module Lumber
     def backup_levels(loggers)
       synchronize do
         loggers.each do |name|
-          logger = Lumber.find_or_create_logger(name)
-          # only store the old level if we haven't overriden it's logger yet
-          @original_levels[name] ||= logger.level
+          outputter = Log4r::Outputter[name]
+          if outputter
+            @original_outputter_levels[name] ||= outputter.level
+          else
+            logger = Lumber.find_or_create_logger(name)
+            # only store the old level if we haven't overriden it's logger yet
+            @original_levels[name] ||= logger.level
+          end
         end
       end
     end
@@ -98,9 +109,15 @@ module Lumber
     # Restores original values of logger levels after expiration
     def restore_levels
       synchronize do
+        @original_outputter_levels.each do |name, level|
+          outputter = Log4r::Outputter[name]
+          outputter.level = level if outputter.level != level
+        end
+        @original_outputter_levels.clear
+        
         @original_levels.each do |name, level|
           logger = Lumber.find_or_create_logger(name)
-          logger.level = level
+          logger.level = level if logger.level != level
         end
         @original_levels.clear
       end

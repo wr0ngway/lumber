@@ -38,9 +38,13 @@
 </table>
 
 <script type="text/javascript" charset="utf-8">
-
-  var typeahead_logger_names = <%=  lnames = []; Log4r::Logger.each {|name, logger| lnames << name }; lnames.inspect %>;
-  var typeahead_logger_levels = <%= Log4r::LNAMES.inspect %>;
+  <%
+    lnames = []
+    Log4r::Outputter.each {|name, outputter| lnames << name }
+    Log4r::Logger.each {|name, logger| lnames << name }
+  %> 
+  var typeahead_logger_names = <%= lnames.sort.inspect %>;
+  var typeahead_logger_levels = <%= Log4r::LNAMES.sort.inspect %>;
   
   jQuery(document).ready(function() {
     $('input[name="levels[][name]"]').typeahead({source: typeahead_logger_names})
