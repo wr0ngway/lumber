@@ -18,7 +18,7 @@ module Lumber
         app.config.logger = Log4r::Logger[Lumber::BASE_LOGGER]
         
         config_level = app.config.log_level
-        if config_level
+        if config_level.present?
           level_str = config_level.to_s.upcase
           level = Log4r::LNAMES.index(level_str)
           raise "Invalid log level: #{config_level}" unless level
