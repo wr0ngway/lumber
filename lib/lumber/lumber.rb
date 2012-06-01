@@ -69,9 +69,9 @@ module Lumber
     self.register_inheritance_handler()
     
     if opts[:monitor_store]
-      LevelUtil.cache = opts[:monitor_store]
+      LevelUtil.cache_provider = opts[:monitor_store]
     elsif defined?(RAILS_CACHE)
-      LevelUtil.cache = RAILS_CACHE
+      LevelUtil.cache_provider = RAILS_CACHE
     end
     LevelUtil.start_monitor(opts[:monitor_interval]) if opts[:monitor_enabled]
   end
