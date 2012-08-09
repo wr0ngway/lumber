@@ -1,6 +1,9 @@
 module Lumber
   module LevelUtil
     
+    # So we have a named thread and can tell which we are in Thread.list
+    class MonitorThread < Thread; end
+    
     extend MonitorMixin
 
     LOG_LEVELS_KEY = "lumber:log_levels"
@@ -71,7 +74,7 @@ module Lumber
     # @return [Thread] The monitor thread
     #
     def start_monitor(interval=10)
-      Thread.new do
+      MonitorThread.new do
         loop do
           begin
             activate_levels

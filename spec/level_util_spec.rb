@@ -121,9 +121,14 @@ describe Lumber::LevelUtil do
     LevelUtil.activate_levels
     Log4r::Logger[@name].level.should == Log4r::LNAMES.index("DEBUG")
     
+    old_size = Thread.list.size
     thread = LevelUtil.start_monitor(0.1)
     thread.should_not be_nil
     thread.should be_alive
+    Thread.list.size.should == old_size + 1
+
+    # test that monitor thread has a nice name
+    Thread.list.collect {|t| t.to_s }.should be_any { |m| m =~ /Lumber::LevelUtil::MonitorThread/ }
     
     Log4r::Logger[@name].level.should == Log4r::LNAMES.index("DEBUG")
     LevelUtil.set_levels({@name => "ERROR"})
