@@ -182,7 +182,7 @@ module Lumber
     # logger of the new class
     parent = clazz.superclass
     while ! parent.nil?
-      parent_logger_name = parent.logger.fullname rescue ''
+      parent_logger_name = (parent.respond_to?(:logger) && parent.logger.respond_to?(:fullname)) ? parent.logger.fullname : ''
       parent_is_registered = @@registered_loggers.values.find {|v| parent_logger_name.index(v) == 0}
       if parent_is_registered && parent.method_defined?(:logger=)
         fullname = "#{parent_logger_name}::#{clazz.name.nil? ? 'anonymous' : clazz.name.split('::').last}"
