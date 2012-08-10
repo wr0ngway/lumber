@@ -11,8 +11,9 @@ To use it in a rails project:
  * add lumber to your Gemfile
  * bundle install
  * run the lumber generator, rails generate lumber, to get a basic config/log4r.yml
- * enable lumber in your config/application.rb:
+ * enable lumber in your rails project
 
+To enable lumber in your rails project, add to your config/application.rb:
 
     # To expose custom variables in log4r.yml
     # config.lumber.some_option = "some_value
@@ -57,7 +58,7 @@ Lumber also comes with a Sinatra UI for dynamically overriding log levels at run
     require 'lumber/server'
     mount Lumber::Server, :at => "/lumber"
 
-This will allow you to temporarily set lower log levels for specific loggers - e.g. if you want a specific model to have DEBUG logging for the next hour.
+This will allow you to temporarily set lower log levels for specific loggers - e.g. if you want a specific model to have DEBUG logging for the next hour. Note that this behavior is enabled by a monitor thread running in your process, so if you want to be able to change the log levels for forked subprocesses (resque, passenger, unicorn, etc), you'll need to restart that thread in an after fork hook by calling Lumber::LevelUtil.start_monitor or use Lumber::LevelUtil.activate_levels for a oneoff activation without the thread.
 
 
 Copyright

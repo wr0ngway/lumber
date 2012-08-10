@@ -138,4 +138,94 @@ describe Lumber::LevelUtil do
     thread.join
   end
   
+  context "heirarchy of loggers" do
+    
+    before(:each) do
+      @parent_name = "parent_#{Time.now.to_f}"
+      @child_name = "#{@parent_name}::child_#{Time.now.to_f}"
+      @other_name = "other_#{Time.now.to_f}"
+    end
+  
+    it "sets levels for logger parents" do
+      Lumber.find_or_create_logger(@parent_name)
+      Lumber.find_or_create_logger(@child_name)
+      Lumber.find_or_create_logger(@other_name)
+      LevelUtil.set_levels({@child_name => "ERROR"})
+      Log4r::Logger[@parent_name].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Logger[@child_name].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Logger[@other_name].level.should == Log4r::LNAMES.index("DEBUG")
+      
+      LevelUtil.activate_levels
+      Log4r::Logger[@parent_name].level.should == Log4r::LNAMES.index("ERROR")
+      Log4r::Logger[@child_name].level.should == Log4r::LNAMES.index("ERROR")
+      Log4r::Logger[@other_name].level.should == Log4r::LNAMES.index("DEBUG")
+    end
+    
+    it "restores levels for logger parents when mapping expires" do
+      Lumber.find_or_create_logger(@parent_name)
+      Lumber.find_or_create_logger(@child_name)
+      Lumber.find_or_create_logger(@other_name)
+      LevelUtil.set_levels({@child_name => "ERROR"})
+      Log4r::Logger[@parent_name].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Logger[@child_name].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Logger[@other_name].level.should == Log4r::LNAMES.index("DEBUG")
+      
+      LevelUtil.activate_levels
+      Log4r::Logger[@parent_name].level.should == Log4r::LNAMES.index("ERROR")
+      Log4r::Logger[@child_name].level.should == Log4r::LNAMES.index("ERROR")
+      Log4r::Logger[@other_name].level.should == Log4r::LNAMES.index("DEBUG")
+      
+      LevelUtil.set_levels({})
+      LevelUtil.activate_levels
+      Log4r::Logger[@parent_name].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Logger[@child_name].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Logger[@other_name].level.should == Log4r::LNAMES.index("DEBUG")
+    end
+    
+    it "sets levels for logger and parent's outputters" do
+      parent_outputter = Log4r::IOOutputter.new("#{@parent_name}_sbout", StringIO.new)
+      child_outputter = Log4r::IOOutputter.new("#{@child_name}_sbout", StringIO.new)
+      other_outputter = Log4r::IOOutputter.new("#{@other_name}_sbout", StringIO.new)
+      
+      Lumber.find_or_create_logger(@parent_name).outputters = [parent_outputter]
+      Lumber.find_or_create_logger(@child_name).outputters = [child_outputter]
+      Lumber.find_or_create_logger(@other_name).outputters = [other_outputter]
+      LevelUtil.set_levels({@child_name => "ERROR"})
+      Log4r::Outputter["#{@parent_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Outputter["#{@child_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Outputter["#{@other_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+      
+      LevelUtil.activate_levels
+      Log4r::Outputter["#{@parent_name}_sbout"].level.should == Log4r::LNAMES.index("ERROR")
+      Log4r::Outputter["#{@child_name}_sbout"].level.should == Log4r::LNAMES.index("ERROR")
+      Log4r::Outputter["#{@other_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+    end
+    
+    it "restores levels for logger and parent's outputters when mapping expires" do
+      parent_outputter = Log4r::IOOutputter.new("#{@parent_name}_sbout", StringIO.new)
+      child_outputter = Log4r::IOOutputter.new("#{@child_name}_sbout", StringIO.new)
+      other_outputter = Log4r::IOOutputter.new("#{@other_name}_sbout", StringIO.new)
+      
+      Lumber.find_or_create_logger(@parent_name).outputters = [parent_outputter]
+      Lumber.find_or_create_logger(@child_name).outputters = [child_outputter]
+      Lumber.find_or_create_logger(@other_name).outputters = [other_outputter]
+      LevelUtil.set_levels({@child_name => "ERROR"})
+      Log4r::Outputter["#{@parent_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Outputter["#{@child_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Outputter["#{@other_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+      
+      LevelUtil.activate_levels
+      Log4r::Outputter["#{@parent_name}_sbout"].level.should == Log4r::LNAMES.index("ERROR")
+      Log4r::Outputter["#{@child_name}_sbout"].level.should == Log4r::LNAMES.index("ERROR")
+      Log4r::Outputter["#{@other_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+
+      LevelUtil.set_levels({})
+      LevelUtil.activate_levels
+      Log4r::Outputter["#{@parent_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Outputter["#{@child_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+      Log4r::Outputter["#{@other_name}_sbout"].level.should == Log4r::LNAMES.index("DEBUG")
+    end
+    
+  end
+  
 end

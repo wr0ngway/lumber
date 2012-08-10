@@ -77,6 +77,30 @@ describe Lumber::Server, :type => :request do
     LevelUtil.get_levels.should == {"foo" => "DEBUG"}
   end
   
+  it "shows heirarchy overrides after assigning", :js => true do
+    @parent_name = "parent_#{Time.now.to_f}"
+    @child_name = "#{@parent_name}::child_#{Time.now.to_f}"
+    @other_name = "other_#{Time.now.to_f}"
+    Lumber.find_or_create_logger(@parent_name)
+    Lumber.find_or_create_logger(@child_name)
+    Lumber.find_or_create_logger(@other_name)
+    
+    LevelUtil.set_levels({})
+    
+    visit "/levels"
+    click_link('Add')
+    fill_in 'levels[][name]', :with => @child_name
+    fill_in 'levels[][level]', :with => "DEBUG"
+    click_button 'Apply'
+
+    page.should_not have_selector("div.alert-error")
+    
+    find(:xpath, "//input[@value='#{@child_name}']/ancestor::tr//input[@value='DEBUG']").should_not be_nil
+    find(:xpath, "//input[@value='#{@parent_name}']/ancestor::tr//input[@value='DEBUG']").should_not be_nil
+    
+    LevelUtil.get_levels.should == {@child_name => "DEBUG", @parent_name => "DEBUG"}
+  end
+  
   it "modifies level overrides", :js => true do
     LevelUtil.set_levels({"foo" => "INFO"})
     

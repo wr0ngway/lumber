@@ -1,7 +1,7 @@
 
 <h1>Logger Levels</h1>
 <p>
-  The table below shows the log levels currently overriden.  You can add/remove overrides and apply them, and they will remain active for the given ttl.
+  The table below shows the log levels currently overriden.  You can add/remove overrides and apply them, and they will remain active for the given ttl.  Overrides will be applied for all parents of the given logger as well as their outputters.
 </p>
 
 <form action="<%= url(:levels) %>" method="POST">

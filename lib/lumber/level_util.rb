@@ -36,6 +36,7 @@ module Lumber
     # @param [Hash] Logger fullname mapping to level name, e.g. {'rails::models::User' => 'DEBUG'}
     #
     def set_levels(levels)
+      levels = expand_heirarchy(levels)
       @cache_provider.write(LOG_LEVELS_KEY, levels, :expires_in => @ttl)
     end
     
@@ -52,7 +53,10 @@ module Lumber
       if levels.size == 0
         restore_levels
       else
+        
+        levels = expand_heirarchy(levels)
         backup_levels(levels.keys)
+        
         levels.each do |name, level|
           level_val = Log4r::LNAMES.index(level)
           outputter = Log4r::Outputter[name]
@@ -126,6 +130,31 @@ module Lumber
       end
     end
   
+    # walk the logger heirarchy and add all parents and outputters to levels
+    # so that the desired level of the child will take effect.  Doesn't override
+    # any logger/levels that already have a value
+    def expand_heirarchy(levels)
+      result = levels.clone
+      
+      levels.each do |name, level|
+        # only need to expand on loggers since outputter already in list
+        if  Log4r::Outputter[name].nil?
+          logger = Lumber.find_or_create_logger(name)
+          while logger
+            logger_name = logger.fullname
+            break if logger_name.nil?
+            result[logger_name] ||= level
+            logger.outputters.each do |o|
+              result[o.name] ||= level
+            end
+            logger = logger.parent
+          end
+        end
+      end
+      
+      return result
+    end
+        
     extend self
 
   end
