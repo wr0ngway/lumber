@@ -154,4 +154,27 @@ describe Lumber do
     assert_valid_logger('Foo3', "root::Foo1::Foo3")
   end
 
+  context "formatted MDC context" do
+    
+    before(:each) do
+      Log4r::MDC.get_context.keys.each {|k| Log4r::MDC.remove(k) }
+    end
+    
+    it "is empty for no context" do
+      Lumber.format_mdc.should == ""
+    end
+    
+    it "has context vars" do
+      Log4r::MDC.put("foo", "bar")
+      Log4r::MDC.put("baz", "boo")
+      Lumber.format_mdc.should == "foo=bar baz=boo"
+    end
+    
+    it "escapes %" do
+      Log4r::MDC.put("%foo", "%bar")
+      Lumber.format_mdc.should == "%%foo=%%bar"
+    end
+    
+  end
+  
 end

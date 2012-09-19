@@ -14,5 +14,7 @@ log4r_config:
       trunc: 'false'
       formatter   :
         date_pattern: '%H:%M:%S'
-        pattern     : '%-5l %d #{hostname} %c[#{Process.pid}]: %m'
+        pattern     : '%-5l %d %C(#{hostname}:#{Process.pid}) [#{Lumber.format_mdc}]: %M'
         type        : PatternFormatter
+
+
