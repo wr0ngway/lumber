@@ -165,9 +165,9 @@ describe Lumber do
     end
     
     it "has context vars" do
-      Log4r::MDC.put("foo", "bar")
       Log4r::MDC.put("baz", "boo")
-      Lumber.format_mdc.should == "foo=bar baz=boo"
+      Log4r::MDC.put("foo", "bar")
+      Lumber.format_mdc.should == "baz=boo foo=bar"
     end
     
     it "escapes %" do
