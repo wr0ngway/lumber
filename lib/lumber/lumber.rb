@@ -120,7 +120,7 @@ module Lumber
   end
 
   # Helper to make it easier to log context through log4r.yml 
-  def format_mdc()
+  def self.format_mdc()
     ctx = Log4r::MDC.get_context.collect {|k, v| k.to_s + "=" + v.to_s }.join(" ")
     ctx.gsub!('%', '%%')
     return ctx
