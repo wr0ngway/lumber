@@ -2,8 +2,10 @@ module Lumber
   module LevelUtil
     
     # So we have a named thread and can tell which we are in Thread.list
-    class MonitorThread < Thread; end
-    
+    class MonitorThread < Thread
+      attr_accessor :exit
+    end
+
     extend MonitorMixin
 
     LOG_LEVELS_KEY = "lumber:log_levels"
@@ -78,8 +80,10 @@ module Lumber
     # @return [Thread] The monitor thread
     #
     def start_monitor(interval=10)
-      MonitorThread.new do
+      t = MonitorThread.new do
         loop do
+          break if self.exit
+
           begin
             activate_levels
           rescue => e
@@ -88,6 +92,8 @@ module Lumber
           sleep interval
         end
       end
+
+      at_exit { t.exit = true }
     end
     
     protected
