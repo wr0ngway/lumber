@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/wr0ngway/lumber.png)](http://travis-ci.org/wr0ngway/lumber)
+
 Lumber
 ======
 
