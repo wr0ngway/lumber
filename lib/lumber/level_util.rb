@@ -3,7 +3,7 @@ module Lumber
     
     # So we have a named thread and can tell which we are in Thread.list
     class MonitorThread < Thread
-      attr_accessor :exit
+      attr_accessor :should_exit
     end
 
     extend MonitorMixin
@@ -82,7 +82,7 @@ module Lumber
     def start_monitor(interval=10)
       t = MonitorThread.new do
         loop do
-          break if self.exit
+          break if Thread.current.should_exit
 
           begin
             activate_levels
@@ -93,7 +93,7 @@ module Lumber
         end
       end
 
-      at_exit { t.exit = true }
+      at_exit { t.should_exit = true }
 
       t
     end
