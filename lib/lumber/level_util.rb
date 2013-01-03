@@ -94,6 +94,8 @@ module Lumber
       end
 
       at_exit { t.exit = true }
+
+      t
     end
     
     protected
