@@ -14,7 +14,8 @@ Gem::Specification.new do |gem|
   gem.name          = "lumber"
   gem.require_paths = ["lib"]
   gem.version       = Lumber::VERSION
-
+  gem.license       = 'MIT'
+  
   gem.add_dependency("log4r", "~> 1.1.10")
   gem.add_dependency("activesupport")
   gem.add_dependency("sinatra")
