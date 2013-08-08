@@ -28,8 +28,14 @@ module Lumber
     end
     
     initializer "lumber.initialize_cache", :after => :initialize_cache do |app|
-      if app.config.lumber.enabled
-        LevelUtil.cache_provider = Rails.cache unless config.lumber.monitor_store
+      # Only set the cache to Rails.cache if the user hasn't
+      # specified a different monitor_store
+      if app.config.lumber.enabled && ! app.config.lumber.monitor_store
+        if defined?(Rails) && Rails.respond_to?(:cache)
+          LevelUtil.cache_provider = Rails.cache
+        elsif defined?(RAILS_CACHE)
+          LevelUtil.cache_provider = RAILS_CACHE
+        end
       end
     end
     

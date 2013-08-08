@@ -69,9 +69,9 @@ module Lumber
     self.register_inheritance_handler()
     
     if opts[:monitor_store]
+      # Setting to Rails.cache handled by a post initialize_cache rails initializer
+      # since Rails.cache is not available when lumber is initialized
       LevelUtil.cache_provider = opts[:monitor_store]
-    elsif defined?(RAILS_CACHE)
-      LevelUtil.cache_provider = RAILS_CACHE
     end
     LevelUtil.start_monitor(opts[:monitor_interval]) if opts[:monitor_enabled]
   end
