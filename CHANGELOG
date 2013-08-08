@@ -1,4 +1,10 @@
+0.13.5 (08/08/2013)
+-------------------
+
+fix rails 4 deprecation <ac7f796> [Matt Conway]
+
 0.13.4 (01/02/2013)
+-------------------
 
 Fixed bad reference that was killing the monitor thread early. <a35520>
 
