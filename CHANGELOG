@@ -1,3 +1,9 @@
+0.13.6 (08/23/2013)
+-------------------
+
+add license to gemspec, closes #6 <0eb4339> [Matt Conway]
+fix reference to registered_loggers <a7e2f85> [Matt Conway]
+
 0.13.5 (08/08/2013)
 -------------------
 
