@@ -33,7 +33,7 @@ describe Lumber do
     clazz.respond_to?(:logger).should be_true
     lgr = clazz.logger
     lgr.should be_an_instance_of(Log4r::Logger)
-    logger_name.should == lgr.fullname
+    lgr.fullname.should == logger_name
   end
 
   it "should not do anything if no loggers registered" do

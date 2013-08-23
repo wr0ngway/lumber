@@ -65,7 +65,7 @@ module Lumber
     end
     Object.const_set('RAILS_DEFAULT_LOGGER', Log4r::Logger[BASE_LOGGER])
 
-    @@registered_loggers = {}
+    self.registered_loggers.clear    
     self.register_inheritance_handler()
     
     if opts[:monitor_store]
@@ -78,6 +78,10 @@ module Lumber
 
   def self.find_or_create_logger(fullname)
     Log4r::Logger[fullname] || Log4r::Logger.new(fullname)
+  end
+  
+  def self.registered_loggers
+    @registered_loggers ||= {}
   end
   
   # Makes :logger exist independently for subclasses and sets that logger
@@ -96,7 +100,7 @@ module Lumber
   # so that you can tell where a log statement came from
   #
   def self.setup_logger_hierarchy(class_name, class_logger_fullname)
-    @@registered_loggers[class_name] = class_logger_fullname
+    Lumber.registered_loggers[class_name] = class_logger_fullname
 
     begin
       clazz = class_name.constantize
@@ -142,7 +146,7 @@ module Lumber
 
           # if the new class is in the list that were registered directly,
           # then create their logger attribute directly, otherwise derive it
-          logger_name = @@registered_loggers[subclass.name]
+          logger_name = Lumber.registered_loggers[subclass.name]
           if logger_name
             Lumber.add_lumber_logger(subclass, logger_name)
           else
@@ -190,7 +194,7 @@ module Lumber
     parent = clazz.superclass
     while ! parent.nil?
       parent_logger_name = (parent.respond_to?(:logger) && parent.logger.respond_to?(:fullname)) ? parent.logger.fullname : ''
-      parent_is_registered = @@registered_loggers.values.find {|v| parent_logger_name.index(v) == 0}
+      parent_is_registered = Lumber.registered_loggers.values.find {|v| parent_logger_name.index(v) == 0}
       if parent_is_registered && parent.method_defined?(:logger=)
         fullname = "#{parent_logger_name}::#{clazz.name.nil? ? 'anonymous' : clazz.name.split('::').last}"
         clazz.logger = Lumber.find_or_create_logger(fullname)
