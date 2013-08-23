@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Lumber::Server, :type => :request do
   include Rack::Test::Methods
+  include Capybara::DSL
   
   before(:each) do
     Capybara.app = Lumber::Server.new
