@@ -1,3 +1,8 @@
+1.0.2 (10/11/2013)
+------------------
+
+add ability to add constant fields to json output <b99703a> [Matt Conway]
+
 1.0.1 (10/11/2013)
 ------------------
 
