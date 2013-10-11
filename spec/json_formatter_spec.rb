@@ -74,12 +74,35 @@ describe Lumber::JsonFormatter do
       EOF
       yml.should include('#{1+1}')
       cfg = Log4r::YamlConfigurator
-      cfg['hostname'] = 'foo'
       cfg.load_yaml_string(yml)
       outputter = Log4r::Outputter['stdout']
       outputter.formatter.should_not be_nil
       outputter.formatter.should be_a_kind_of Lumber::JsonFormatter
       outputter.formatter.instance_variable_get(:@fields).should eq({'version' => 1, 'dynamic' => '2'})
+    end
+
+    it "can receive date_pattern configuration" do
+      yml = <<-'EOF'
+        log4r_config:
+          pre_config:
+            root:
+              level: 'DEBUG'
+          loggers:
+            - name: "mylogger"
+
+          outputters:
+            - type: StdoutOutputter
+              name: stdout
+              formatter:
+                type: JsonFormatter
+                date_pattern: "%M"
+      EOF
+      cfg = Log4r::YamlConfigurator
+      cfg.load_yaml_string(yml)
+      outputter = Log4r::Outputter['stdout']
+      outputter.formatter.should_not be_nil
+      outputter.formatter.should be_a_kind_of Lumber::JsonFormatter
+      outputter.formatter.instance_variable_get(:@date_pattern).should == "%M"
     end
 
   end
@@ -165,6 +188,17 @@ describe Lumber::JsonFormatter do
       json = JSON.parse(@sio.string)
       json['message'].should == 'howdy'
       json['version'].should == 1
+    end
+
+    it "logs as json with date format" do
+      now = Time.now
+      Time.stub(:now).and_return(now)
+      @formatter = Lumber::JsonFormatter.new('date_pattern' => "%s")
+      @outputter.formatter = @formatter
+
+      @logger.info("howdy")
+      json = JSON.parse(@sio.string)
+      json['timestamp'].should == now.to_i.to_s
     end
 
     it "logs exception as json" do

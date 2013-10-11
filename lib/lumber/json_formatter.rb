@@ -18,12 +18,14 @@ module Lumber
           @fields[k.to_s] = v
         end
       end
+
+      @date_pattern = hash['date_pattern'] || '%H:%M:%S'
     end
 
     def format(logevent)
       data = @fields.dup
 
-      assign_mapped_key(data, :timestamp, Time.now.to_s)
+      assign_mapped_key(data, :timestamp, Time.now.strftime(@date_pattern))
       assign_mapped_key(data, :logger, logevent.fullname)
       assign_mapped_key(data, :level, Log4r::LNAMES[logevent.level].downcase)
 
@@ -82,7 +84,7 @@ module Lumber
         assign_mapped_key(data, :mdc, value)
       end
 
-      data.to_json
+      "#{data.to_json}\n"
     end
 
     private
