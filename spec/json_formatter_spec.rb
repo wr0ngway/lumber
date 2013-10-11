@@ -27,7 +27,7 @@ describe Lumber::JsonFormatter do
       outputter.formatter.should be_a_kind_of Lumber::JsonFormatter
     end
 
-    it "can receive configuration" do
+    it "can receive key_mapping configuration" do
       yml = <<-EOF
         log4r_config:
           pre_config:
@@ -52,6 +52,34 @@ describe Lumber::JsonFormatter do
       outputter.formatter.should_not be_nil
       outputter.formatter.should be_a_kind_of Lumber::JsonFormatter
       outputter.formatter.instance_variable_get(:@key_mapping).should eq({'level' => ['severity'], 'backtrace' => ['exception', 'bt']})
+    end
+
+    it "can receive fields configuration" do
+      yml = <<-'EOF'
+        log4r_config:
+          pre_config:
+            root:
+              level: 'DEBUG'
+          loggers:
+            - name: "mylogger"
+
+          outputters:
+            - type: StdoutOutputter
+              name: stdout
+              formatter:
+                type: JsonFormatter
+                fields:
+                  version: 1
+                  dynamic: "#{1+1}"
+      EOF
+      yml.should include('#{1+1}')
+      cfg = Log4r::YamlConfigurator
+      cfg['hostname'] = 'foo'
+      cfg.load_yaml_string(yml)
+      outputter = Log4r::Outputter['stdout']
+      outputter.formatter.should_not be_nil
+      outputter.formatter.should be_a_kind_of Lumber::JsonFormatter
+      outputter.formatter.instance_variable_get(:@fields).should eq({'version' => 1, 'dynamic' => '2'})
     end
 
   end
@@ -127,6 +155,16 @@ describe Lumber::JsonFormatter do
       json = JSON.parse(@sio.string)
       json['level'].should be_nil
       json['severity'].should == 'info'
+    end
+
+    it "logs as json with fields" do
+      @formatter = Lumber::JsonFormatter.new('fields' => {'version' => 1})
+      @outputter.formatter = @formatter
+
+      @logger.info("howdy")
+      json = JSON.parse(@sio.string)
+      json['message'].should == 'howdy'
+      json['version'].should == 1
     end
 
     it "logs exception as json" do

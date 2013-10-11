@@ -6,13 +6,23 @@ module Lumber
   class JsonFormatter < Log4r::BasicFormatter
 
     def initialize(hash={})
-      @key_mapping = {}
       mapping = hash['key_mapping'] || {}
       @key_mapping = Hash[mapping.collect {|k, v| [k.to_s, v.to_s.split('.')]}]
+
+      @fields = {}
+      fields = hash['fields'] || {}
+      fields.each do |k, v|
+        if v.kind_of? String
+          @fields[k.to_s] = v.to_s.gsub(/#\{(.+)\}/) {|m| eval($1) }
+        else
+          @fields[k.to_s] = v
+        end
+      end
     end
 
     def format(logevent)
-      data = {}
+      data = @fields.dup
+
       assign_mapped_key(data, :timestamp, Time.now.to_s)
       assign_mapped_key(data, :logger, logevent.fullname)
       assign_mapped_key(data, :level, Log4r::LNAMES[logevent.level].downcase)
