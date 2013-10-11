@@ -1,3 +1,15 @@
+1.0.1 (10/11/2013)
+------------------
+
+add log4r json formatter
+
+1.0.0 (10/11/2013)
+------------------
+
+Add coveralls and use poltergeist/phantomjs instead of capybara-webkit so we
+fix capybara usage for capybara 2.x for travis
+only supporting ruby 1.9.3 and higher
+
 0.13.6 (08/23/2013)
 -------------------
 
