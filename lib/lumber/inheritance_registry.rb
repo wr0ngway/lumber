@@ -35,7 +35,7 @@ module Lumber
     def remove_inheritance_handler
       synchronize do
 
-        return if ! defined?(Object.inherited_with_lumber_registry)
+        return unless defined?(Object.inherited_with_lumber_registry)
 
         Object.class_eval do
           class << self
