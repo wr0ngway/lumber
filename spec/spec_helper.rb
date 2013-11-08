@@ -1,6 +1,7 @@
 ENV['RACK_ENV'] = 'test'
 
-if ENV['CI']
+# coveralls+rspec+java causes exit code of 1 even when specs pass
+if ENV['CI'] && RUBY_ENGINE != 'jruby'
   require 'coveralls'
   Coveralls.wear!
 end
