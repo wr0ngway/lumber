@@ -11,6 +11,45 @@ describe Lumber do
                 :log_file => "/tmp/lumber-test.log")
   end
 
+  describe "#logger_name" do
+
+    it "generates a name for a simple class" do
+      new_class('Foo')
+      Lumber.logger_name(Foo).should == "rails::Foo"
+    end
+
+    it "generates a name for a registered class" do
+      Lumber.setup_logger_hierarchy("Foo", "root::foo")
+      new_class('Foo')
+      Lumber.logger_name(Foo).should == "root::foo"
+    end
+
+    it "generates a name for a subclass" do
+      Lumber.setup_logger_hierarchy("Foo", "root::foo")
+      new_class('Foo')
+      new_class('Bar', 'Foo')
+      Lumber.logger_name(Bar).should == "root::foo::Bar"
+    end
+
+    it "generates a name for a deep subclass" do
+      Lumber.setup_logger_hierarchy("Foo", "root::foo")
+      new_class('Foo')
+      new_class('Foo1', 'Foo')
+      new_class('Bar', 'Foo1')
+      Lumber.logger_name(Bar).should == "root::foo::Bar"
+    end
+
+  end
+
+  describe "#logger_for" do
+
+     it "gets the logger" do
+       new_class('Foo')
+       Lumber.logger_for(Foo).fullname.should == "rails::Foo"
+     end
+
+  end
+
   describe "#find_or_create_logger" do
 
     it "creates loggers for each segment" do

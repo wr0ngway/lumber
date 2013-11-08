@@ -12,7 +12,7 @@ describe Lumber::LoggerSupport do
 
   it "should memoize logger" do
     class Foo; include Lumber::LoggerSupport; end
-    Lumber.should_receive(:find_or_create_logger).once.and_call_original
+    Lumber.should_receive(:logger_for).once.and_call_original
 
     Foo.logger.fullname.should == "rails::Foo"
     Foo.logger.fullname.should == "rails::Foo"

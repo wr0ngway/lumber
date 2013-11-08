@@ -78,6 +78,32 @@ module Lumber
     LevelUtil.start_monitor(opts[:monitor_interval]) if opts[:monitor_enabled]
   end
 
+  def logger_name(clazz)
+    # Use the registered logger name if this class is in the registry
+    logger_name = Lumber::InheritanceRegistry[clazz.name]
+    if logger_name.nil?
+      # if not, find the first registered logger name in the superclass chain, if any
+      logger_name = Lumber::InheritanceRegistry.find_registered_logger(clazz.superclass)
+      if logger_name.nil?
+        # use name from clazz as we aren't inheriting
+        logger_name = "#{Lumber::BASE_LOGGER}#{Log4r::Log4rConfig::LoggerPathDelimiter}#{clazz.name}"
+      else
+        # base name on inherited logger and clazz since we are inheriting
+        # In log4r, a logger's parent is looked up from the name, and
+        # Lumber.find_or_create_logger ensures that loggers are created for
+        # all pieces of the name
+        logger_name = "#{logger_name}#{Log4r::Log4rConfig::LoggerPathDelimiter}#{clazz.name}"
+      end
+    end
+    logger_name
+  end
+
+  def logger_for(clazz)
+    synchronize do
+      Lumber.find_or_create_logger(logger_name(clazz))
+    end
+  end
+
   def find_or_create_logger(fullname)
     synchronize do
       logger = Log4r::Logger[fullname]

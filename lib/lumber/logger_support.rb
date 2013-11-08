@@ -16,28 +16,14 @@ module Lumber
 
     module ClassMethods
 
-      def lumber_logger_name
-        # Use the registered logger name if this class is in the registry
-        logger_name = Lumber::InheritanceRegistry[self.name]
-        if logger_name.nil?
-          # if not, find the first registered logger name in the superclass chain, if any
-          logger_name = Lumber::InheritanceRegistry.find_registered_logger(self.superclass)
-          if logger_name.nil?
-            # use self as name as we aren't inheriting
-            logger_name = "#{Lumber::BASE_LOGGER}#{Log4r::Log4rConfig::LoggerPathDelimiter}#{self.name}"
-          else
-            # base name on inherited logger and self since we are inheriting
-            # In log4r, a logger's parent is looked up from the name, and
-            # Lumber.find_or_create_logger ensures that loggers are created for
-            # all pieces of the name
-            logger_name = "#{logger_name}#{Log4r::Log4rConfig::LoggerPathDelimiter}#{self.name}"
-          end
-        end
-        logger_name
-      end
 
       def logger
-        @lumber_logger ||= Lumber.find_or_create_logger(lumber_logger_name)
+        # This should probably be synchronized, but don't want to
+        # incur the performance hit on such a heavily used method.
+        # I think the worst case is that it'll just get assigned
+        # multiple times, but it'll get the same reference because
+        # Lumber.logger has a lock
+        @lumber_logger ||= Lumber.logger_for(self)
       end
 
       def logger=(logger)
