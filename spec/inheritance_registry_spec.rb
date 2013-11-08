@@ -58,6 +58,18 @@ describe Lumber::InheritanceRegistry do
 
   end
 
+  describe "#remove_inheritance_handler" do
+
+    it "should remove the handler" do
+      defined?(Object.inherited_with_lumber_registry).should be_false
+      InheritanceRegistry.register_inheritance_handler
+      defined?(Object.inherited_with_lumber_registry).should be_true
+      InheritanceRegistry.remove_inheritance_handler
+      defined?(Object.inherited_with_lumber_registry).should be_false
+    end
+
+  end
+
   describe "#register_inheritance_handler" do
 
     before(:each) do

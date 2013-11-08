@@ -35,7 +35,7 @@ module Lumber
     def remove_inheritance_handler
       synchronize do
 
-        return if ! defined?(Object.singleton_class.inherited_with_lumber_registry)
+        return if ! defined?(Object.inherited_with_lumber_registry)
 
         Object.class_eval do
           class << self
@@ -44,13 +44,15 @@ module Lumber
             alias_method :inherited, :inherited_without_lumber_registry
           end
         end
+
       end
     end
 
     # Adds a inheritance handler to Object so we can add loggers for registered classes
     def register_inheritance_handler
       synchronize do
-        return if defined?(Object.singleton_class.inherited_with_lumber_registry)
+
+        return if defined?(Object.inherited_with_lumber_registry)
 
         Object.class_eval do
 
@@ -74,6 +76,7 @@ module Lumber
           end
 
         end
+
       end
     end
 
