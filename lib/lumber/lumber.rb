@@ -25,6 +25,9 @@ module Lumber
   # name of top level logger (can't be root as you can't have outputters on root)
   BASE_LOGGER= 'rails'
 
+  extend MonitorMixin
+  extend self
+
   # Initializes log4r system.  Needs to happen in
   # config/environment.rb before Rails::Initializer.run
   #
@@ -41,7 +44,7 @@ module Lumber
   # All config options get passed through to the log4r
   # configurator for use in defining outputters
   #
-  def self.init(opts = {})
+  def init(opts = {})
     opts[:root] ||= RAILS_ROOT.to_s if defined?(RAILS_ROOT)
     opts[:env] ||= RAILS_ENV if defined?(RAILS_ENV)
     opts[:config_file] ||= "#{opts[:root]}/config/log4r.yml"
@@ -63,11 +66,10 @@ module Lumber
     if defined?(RAILS_DEFAULT_LOGGER)
       Object.send(:remove_const, :RAILS_DEFAULT_LOGGER)
     end
-    Object.const_set('RAILS_DEFAULT_LOGGER', Log4r::Logger[BASE_LOGGER])
+    Object.const_set('RAILS_DEFAULT_LOGGER', find_or_create_logger(BASE_LOGGER))
 
-    self.registered_loggers.clear    
-    self.register_inheritance_handler()
-    
+    Lumber::InheritanceRegistry.clear
+
     if opts[:monitor_store]
       # Setting to Rails.cache handled by a post initialize_cache rails initializer
       # since Rails.cache is not available when lumber is initialized
@@ -76,12 +78,24 @@ module Lumber
     LevelUtil.start_monitor(opts[:monitor_interval]) if opts[:monitor_enabled]
   end
 
-  def self.find_or_create_logger(fullname)
-    Log4r::Logger[fullname] || Log4r::Logger.new(fullname)
-  end
-  
-  def self.registered_loggers
-    @registered_loggers ||= {}
+  def find_or_create_logger(fullname)
+    synchronize do
+      logger = Log4r::Logger[fullname]
+      if logger.nil?
+        # build the loggers from the lhs up to ensure the name based logger inheritance gets applied
+        parts = fullname.split(Log4r::Log4rConfig::LoggerPathDelimiter)
+        aggregate_name = nil
+        parts.each do |part|
+          if aggregate_name.nil?
+            aggregate_name = part
+          else
+            aggregate_name = "#{aggregate_name}#{Log4r::Log4rConfig::LoggerPathDelimiter}#{part}"
+          end
+          logger = Log4r::Logger[aggregate_name] || Log4r::Logger.new(aggregate_name)
+        end
+      end
+      logger
+    end
   end
   
   # Makes :logger exist independently for subclasses and sets that logger
@@ -99,109 +113,24 @@ module Lumber
   # output will include "<class_name>" on every log from this class
   # so that you can tell where a log statement came from
   #
-  def self.setup_logger_hierarchy(class_name, class_logger_fullname)
-    Lumber.registered_loggers[class_name] = class_logger_fullname
+  def setup_logger_hierarchy(class_name, class_logger_fullname)
+    Lumber::InheritanceRegistry.register_inheritance_handler
+    Lumber::InheritanceRegistry[class_name] = class_logger_fullname
 
     begin
       clazz = class_name.constantize
-
-      # ActiveSupport 3.2 introduced class_attribute, which is supposed to be used instead of class_inheritable_accessor if available
-      [:class_attribute, :class_inheritable_accessor].each do |class_attribute_method|
-
-        if clazz.respond_to? class_attribute_method
-          clazz.class_eval do
-            send class_attribute_method, :logger
-            self.logger = Lumber.find_or_create_logger(class_logger_fullname)
-          end
-
-          break
-        end
-      end
-
+      clazz.send(:include, Lumber::LoggerSupport)
     rescue NameError
-      # The class hasn't been defined yet.  No problem, we've registered the logger for when the class is created.
+      # The class hasn't been defined yet.  No problem, we've registered
+      # the logger for when the class is created.
     end
   end
 
   # Helper to make it easier to log context through log4r.yml 
-  def self.format_mdc()
+  def format_mdc()
     ctx = Log4r::MDC.get_context.collect {|k, v| k.to_s + "=" + v.to_s }.join(" ")
     ctx.gsub!('%', '%%')
     return ctx
-  end
-  
-  private
-
-  # Adds a inheritance handler to Object so we can know to add loggers
-  # for classes as they get defined.
-  def self.register_inheritance_handler()
-    return if defined?(Object.inherited_with_lumber_log4r)
-
-    Object.class_eval do
-
-      class << self
-
-        def inherited_with_lumber_log4r(subclass)
-          inherited_without_lumber_log4r(subclass)
-
-          # if the new class is in the list that were registered directly,
-          # then create their logger attribute directly, otherwise derive it
-          logger_name = Lumber.registered_loggers[subclass.name]
-          if logger_name
-            Lumber.add_lumber_logger(subclass, logger_name)
-          else
-            Lumber.derive_lumber_logger(subclass)
-          end
-        end
-
-        alias_method_chain :inherited, :lumber_log4r
-
-      end
-
-    end
-
-  end
-
-  def self.add_lumber_logger(clazz, logger_name)
-    clazz.class_eval do
-      # ActiveSupport 3.2 introduced class_attribute, which is supposed to be used instead of class_inheritable_accessor if available
-      if respond_to? :class_attribute
-        class_attribute :logger
-      else
-        class_inheritable_accessor :logger
-      end
-
-      self.logger = Lumber.find_or_create_logger(logger_name)
-
-      class << self
-
-        # Prevent rails from overwriting our logger
-        def cattr_accessor_with_lumber_log4r(*syms)
-          without_logger = syms.reject {|s| s == :logger}
-          cattr_accessor_without_lumber_log4r(*without_logger)
-        end
-        alias_method_chain :cattr_accessor, :lumber_log4r
-
-      end
-
-    end
-  end
-
-  def self.derive_lumber_logger(clazz)
-    # otherwise, walk up the classes hierarchy till you find a logger
-    # that was registered, and use that logger as the parent for the
-    # logger of the new class
-    parent = clazz.superclass
-    while ! parent.nil?
-      parent_logger_name = (parent.respond_to?(:logger) && parent.logger.respond_to?(:fullname)) ? parent.logger.fullname : ''
-      parent_is_registered = Lumber.registered_loggers.values.find {|v| parent_logger_name.index(v) == 0}
-      if parent_is_registered && parent.method_defined?(:logger=)
-        fullname = "#{parent_logger_name}::#{clazz.name.nil? ? 'anonymous' : clazz.name.split('::').last}"
-        clazz.logger = Lumber.find_or_create_logger(fullname)
-        break
-      end
-      parent = parent.superclass
-    end
   end
 
 end

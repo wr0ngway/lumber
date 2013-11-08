@@ -15,7 +15,7 @@ module Lumber
           Lumber.setup_logger_hierarchy("ActionController::Base", "rails::controllers")
           Lumber.setup_logger_hierarchy("ActionMailer::Base", "rails::mailers")      
         end
-        app.config.logger = Log4r::Logger[Lumber::BASE_LOGGER]
+        app.config.logger = Lumber.find_or_create_logger(Lumber::BASE_LOGGER)
         
         config_level = app.config.log_level
         if config_level.present?
