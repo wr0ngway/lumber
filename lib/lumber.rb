@@ -1,6 +1,7 @@
 $:.unshift(File.dirname(__FILE__))
 
 # before config block
+require "monitor"
 require "lumber/lumber"
 require "lumber/inheritance_registry"
 require "lumber/logger_support"
