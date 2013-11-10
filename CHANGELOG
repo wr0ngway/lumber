@@ -1,3 +1,15 @@
+1.1.0 (11/10/2013)
+------------------
+
+Make loggers get created lazily, refactoring to support this behavior and (hopefully) make the code more understandable <8c2bd7b> [Matt Conway]
+disable coveralls for jruby <9a1ff9b> [Matt Conway]
+fix jruby <71dc96f> [Matt Conway]
+fix rails generator <164c9ed> [Matt Conway]
+fix tests for move of log4r.yml in generators <319fc3d> [Matt Conway]
+more readable <20a9666> [Matt Conway]
+refactor a bit to add more thread safety <3712ee1> [Matt Conway]
+try and fix travis error <7a4e59e> [Matt Conway]
+
 1.0.3 (10/11/2013)
 ------------------
 
