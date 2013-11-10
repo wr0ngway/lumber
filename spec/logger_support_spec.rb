@@ -6,7 +6,7 @@ describe Lumber::LoggerSupport do
     root = "#{File.dirname(__FILE__)}/.."
     Lumber.init(:root => root,
                 :env => 'test',
-                :config_file => "#{root}/generators/lumber/templates/log4r.yml",
+                :config_file => "#{root}/lib/generators/lumber/templates/log4r.yml",
                 :log_file => "/tmp/lumber-test.log")
   end
 
