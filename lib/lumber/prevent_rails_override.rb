@@ -11,11 +11,30 @@ module Lumber
 
       class << self
         # Prevent rails from overwriting our logger
-        def cattr_accessor_with_lumber(*syms)
+        def cattr_reader_with_lumber(*syms)
           without_logger = syms.reject {|s| s == :logger}
-          cattr_accessor_without_lumber(*without_logger)
+          cattr_reader_without_lumber(*without_logger)
         end
-        alias_method_chain :cattr_accessor, :lumber
+        alias_method_chain :cattr_reader, :lumber
+
+        def cattr_writer_with_lumber(*syms)
+          without_logger = syms.reject {|s| s == :logger}
+          cattr_writer_without_lumber(*without_logger)
+        end
+        alias_method_chain :cattr_writer, :lumber
+
+        def mattr_reader_with_lumber(*syms)
+          without_logger = syms.reject {|s| s == :logger}
+          mattr_reader_without_lumber(*without_logger)
+        end
+        alias_method_chain :mattr_reader, :lumber
+
+        def mattr_writer_with_lumber(*syms)
+          without_logger = syms.reject {|s| s == :logger}
+          mattr_writer_without_lumber(*without_logger)
+        end
+        alias_method_chain :mattr_writer, :lumber
+
       end
 
     end
