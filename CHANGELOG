@@ -1,3 +1,8 @@
+1.1.3 (12/20/2013)
+------------------
+
+set the Rails.logger level after init to workaround https://github.com/rails/rails/issues/13421 <25b121c> [Matt Conway]
+
 1.1.2 (12/17/2013)
 ------------------
 
