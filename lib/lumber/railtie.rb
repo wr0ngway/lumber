@@ -17,16 +17,23 @@ module Lumber
         end
         app.config.logger = Lumber.find_or_create_logger(Lumber::BASE_LOGGER)
 
-        config_level = app.config.log_level
-        if config_level.present?
-          level_str = config_level.to_s.upcase
-          level = Log4r::LNAMES.index(level_str)
-          raise "Invalid log level: #{config_level}" unless level
-          app.config.logger.level = level
-        else
+        # backwards compat for setting log_level to '' to defer to log4r.yml
+        # log_level needs to be set for rails >= 4.0.2
+        if app.config.log_level.blank?
           app.config.log_level = Log4r::LNAMES[app.config.logger.level]
         end
       end
+    end
+
+    initializer "lumber.set_logger_level", :after => :initialize_logger do |app|
+      # Set the level on logger to workaround rails forcing level
+      # to a ::Logger constant in the :initialize_logger initializer
+      # https://github.com/rails/rails/issues/13421
+      config_level = app.config.log_level
+      level_str = config_level.to_s.upcase
+      level = Log4r::LNAMES.index(level_str)
+      raise "Invalid log level: #{config_level}" unless level
+      app.config.logger.level = level
     end
 
     initializer "lumber.initialize_cache", :after => :initialize_cache do |app|
