@@ -21,7 +21,7 @@ describe Lumber::JsonFormatter do
       EOF
 
       cfg = Log4r::YamlConfigurator
-      cfg.load_yaml_string(yml)
+      cfg.load_yaml_string(clean_indent(yml))
       outputter = Log4r::Outputter['stdout']
       outputter.formatter.should_not be_nil
       outputter.formatter.should be_a_kind_of Lumber::JsonFormatter
@@ -47,7 +47,7 @@ describe Lumber::JsonFormatter do
       EOF
 
       cfg = Log4r::YamlConfigurator
-      cfg.load_yaml_string(yml)
+      cfg.load_yaml_string(clean_indent(yml))
       outputter = Log4r::Outputter['stdout']
       outputter.formatter.should_not be_nil
       outputter.formatter.should be_a_kind_of Lumber::JsonFormatter
@@ -74,7 +74,7 @@ describe Lumber::JsonFormatter do
       EOF
       yml.should include('#{1+1}')
       cfg = Log4r::YamlConfigurator
-      cfg.load_yaml_string(yml)
+      cfg.load_yaml_string(clean_indent(yml))
       outputter = Log4r::Outputter['stdout']
       outputter.formatter.should_not be_nil
       outputter.formatter.should be_a_kind_of Lumber::JsonFormatter
@@ -98,7 +98,7 @@ describe Lumber::JsonFormatter do
                 date_pattern: "%M"
       EOF
       cfg = Log4r::YamlConfigurator
-      cfg.load_yaml_string(yml)
+      cfg.load_yaml_string(clean_indent(yml))
       outputter = Log4r::Outputter['stdout']
       outputter.formatter.should_not be_nil
       outputter.formatter.should be_a_kind_of Lumber::JsonFormatter

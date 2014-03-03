@@ -26,6 +26,22 @@ require 'capybara/rspec'
 require 'capybara/poltergeist'
 Capybara.javascript_driver = :poltergeist
 
+def clean_indent(str)
+  first_indent = nil
+  str.lines.collect do |line|
+    if line =~ /\S/ # line has at least one non-whitespace character
+      if first_indent.nil?
+        line =~ /^(\s*)/
+        first_indent = $1
+      end
+      line.slice!(0, first_indent.size)
+      line
+    else
+      ""
+    end
+  end.join()
+end
+
 def new_class(class_name, super_class=nil, super_module=nil)
   s = "class #{class_name}"
   s << " < #{super_class}" if super_class

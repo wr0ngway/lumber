@@ -53,7 +53,7 @@ describe Lumber::LoggerSupport do
     EOF
     
     cfg = Log4r::YamlConfigurator
-    cfg.load_yaml_string(yml)
+    cfg.load_yaml_string(clean_indent(yml))
     logger = Lumber.find_or_create_logger("rails::Foo")
     sio = StringIO.new 
     logger.outputters = [Log4r::IOOutputter.new("sbout", sio)]
