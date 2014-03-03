@@ -12,22 +12,30 @@ module Lumber
 
       delegate :logger, :to => "self.class"
 
-    end
+      # put logger on singleton class so it overrides any already there,
+      # and makes logger available from class, singleton_class and the
+      # instance (from the delegate call)
+      class << self
 
-    module ClassMethods
+        def lumber_logger
+          # This should probably be synchronized, but don't want to
+          # incur the performance hit on such a heavily used method.
+          # I think the worst case is that it'll just get assigned
+          # multiple times, but it'll get the same reference because
+          # Lumber.logger has a lock
+          @lumber_logger ||= Lumber.logger_for(self)
+        end
 
+        def lumber_logger=(logger)
+          @lumber_logger = logger
+        end
 
-      def logger
-        # This should probably be synchronized, but don't want to
-        # incur the performance hit on such a heavily used method.
-        # I think the worst case is that it'll just get assigned
-        # multiple times, but it'll get the same reference because
-        # Lumber.logger has a lock
-        @lumber_logger ||= Lumber.logger_for(self)
-      end
+        alias_method :logger, :lumber_logger
 
-      def logger=(logger)
-        @lumber_logger = logger
+        # prevent rails from setting logger (e.g. when initializing ActionController::Base)
+        def logger=(logger)
+          logger.debug "lumber preventing set of logger for #{self} to #{logger}, use #lumber_logger= if you really want it set"
+        end
       end
 
     end

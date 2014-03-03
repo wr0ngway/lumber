@@ -27,5 +27,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency("poltergeist")
   gem.add_development_dependency("awesome_print")
   gem.add_development_dependency("sinatra-contrib")
-
+  gem.add_development_dependency("rails", "~> 4.0.3")
 end

@@ -123,17 +123,6 @@ describe Lumber do
       assert_valid_logger('Foo2', "root::foo2")
     end
 
-    it "should prevent cattr_accessor for a class registered before the class is defined" do
-      defined?(Foo1).should be_false
-      Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
-      new_class('Foo1')
-      Foo1.class_eval do
-        cattr_accessor :logger, :foo
-      end
-      defined?(Foo1.foo).should be_true
-      assert_valid_logger('Foo1', "root::foo1")
-    end
-
     it "should allow registering logger for a nested class before the class is defined" do
       defined?(Bar1::Foo1).should be_false
       Lumber.setup_logger_hierarchy("Bar1::Foo1", "root::foo1")

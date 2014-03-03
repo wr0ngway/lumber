@@ -95,7 +95,6 @@ describe Lumber::InheritanceRegistry do
       InheritanceRegistry.register_inheritance_handler
       class Foo; end
       Foo.ancestors.should_not include(Lumber::LoggerSupport)
-      Foo.ancestors.should_not include(Lumber::PreventRailsOverride)
     end
 
     it "adds logger support for classes that are registered" do
@@ -103,7 +102,6 @@ describe Lumber::InheritanceRegistry do
       InheritanceRegistry["Foo"] = "root::Foo"
       class Foo; end
       Foo.ancestors.should include(Lumber::LoggerSupport)
-      Foo.ancestors.should include(Lumber::PreventRailsOverride)
     end
 
   end

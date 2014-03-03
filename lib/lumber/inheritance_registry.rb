@@ -67,7 +67,6 @@ module Lumber
               # is loaded after registering logger inheritance
               if Lumber::InheritanceRegistry[subclass.name]
                 subclass.send(:include, Lumber::LoggerSupport)
-                subclass.send(:include, Lumber::PreventRailsOverride)
               end
             end
 

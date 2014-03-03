@@ -141,15 +141,18 @@ module Lumber
   #
   def setup_logger_hierarchy(class_name, class_logger_fullname)
     Lumber::InheritanceRegistry.register_inheritance_handler
-    Lumber::InheritanceRegistry[class_name] = class_logger_fullname
 
     begin
       clazz = class_name.constantize
       clazz.send(:include, Lumber::LoggerSupport)
     rescue NameError
-      # The class hasn't been defined yet.  No problem, we've registered
-      # the logger for when the class is created.
+      # The class hasn't been defined yet.  No problem, we register
+      # the logger for when the class is created below
     end
+
+    # Don't register the class until after we see if it is already defined, that
+    # way LoggerSupport gets included _after_ class is defined and overrides logger
+    Lumber::InheritanceRegistry[class_name] = class_logger_fullname
   end
 
   # Helper to make it easier to log context through log4r.yml 
