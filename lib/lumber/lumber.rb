@@ -49,7 +49,7 @@ module Lumber
     opts[:env] ||= RAILS_ENV if defined?(RAILS_ENV)
     opts[:config_file] ||= "#{opts[:root]}/config/log4r.yml"
     opts[:log_file] ||= "#{opts[:root]}/log/#{opts[:env]}.log"
-    opts[:monitor_enabled] ||= true
+    opts[:monitor_enabled] = true unless opts[:monitor_enabled] == false
     opts[:monitor_interval] ||= 60
     
     raise "Lumber.init missing one of :root, :env" unless opts[:root] && opts[:env]
