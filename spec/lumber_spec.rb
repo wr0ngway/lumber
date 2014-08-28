@@ -203,7 +203,6 @@ describe Lumber do
 
   end
 
-
   context "using other Logging Concerns" do
 
     before(:each) do
