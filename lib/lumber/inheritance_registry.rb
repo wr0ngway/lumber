@@ -66,7 +66,7 @@ module Lumber
               # Also prevent rails from subsequently overriding our logger when rails
               # is loaded after registering logger inheritance
               if Lumber::InheritanceRegistry[subclass.name]
-                subclass.send(:include, Lumber::LoggerSupport)
+                subclass.send(:include, Lumber.logger_concern)
               end
             end
 
