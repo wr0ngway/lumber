@@ -68,7 +68,7 @@ module Lumber
 
     cfg.load_yaml_file(opts[:config_file])
 
-    self.logger_concern = opts[:logger_conce]
+    self.logger_concern = opts[:logger_concern]
 
     # Workaround for rails bug: http://dev.rubyonrails.org/ticket/8665
     if defined?(RAILS_DEFAULT_LOGGER)
