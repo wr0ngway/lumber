@@ -55,13 +55,19 @@ end
 def assert_valid_logger(class_name, logger_name)
   clazz = eval class_name
   clazz.should_not be_nil
-  clazz.respond_to?(:logger).should be_true
+  clazz.respond_to?(:logger).should be_truthy
   lgr = clazz.logger
   lgr.should be_an_instance_of(Log4r::Logger)
   lgr.fullname.should == logger_name
 end
 
 RSpec.configure do |config|
+  config.mock_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+  config.expect_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
   config.before(:each) do
     Object.constants.grep(/^(Foo|Bar)/).each do |c|
       Object.send(:remove_const, c)

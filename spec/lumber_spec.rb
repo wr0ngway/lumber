@@ -81,16 +81,16 @@ describe Lumber do
   describe "#setup_logger_hierarchy" do
 
     it "should allow registering logger for a class before the class is defined" do
-      defined?(Foo1).should be_false
+      defined?(Foo1).should be_falsey
       Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
       new_class('Foo1')
       assert_valid_logger('Foo1', "root::foo1")
     end
 
     it "should not register new logger for subclasses of classes that delegate logger" do
-      defined?(Foo1).should be_false # ActionController::Base
-      defined?(Foo2).should be_false # ActionView::Base
-      defined?(Foo3).should be_false # Subclass of ActionView::Base
+      defined?(Foo1).should be_falsey # ActionController::Base
+      defined?(Foo2).should be_falsey # ActionView::Base
+      defined?(Foo3).should be_falsey # Subclass of ActionView::Base
       Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
       eval "class ::Foo1; end"
       eval "class ::Foo2; delegate :logger, :to => Foo1; end"
@@ -101,20 +101,20 @@ describe Lumber do
     end
 
     it "should no logger when parent is via delegate class" do
-      defined?(Foo1).should be_false
-      defined?(Foo2).should be_false
-      defined?(Foo3).should be_false
+      defined?(Foo1).should be_falsey
+      defined?(Foo2).should be_falsey
+      defined?(Foo3).should be_falsey
       Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
       eval "class ::Foo1; end"
       eval "class ::Foo2 < DelegateClass(Foo1); end"
       eval "class ::Foo3 < Foo2; end"
       assert_valid_logger('Foo1', "root::foo1")
-      defined?(Foo3.logger).should be_false
+      defined?(Foo3.logger).should be_falsey
     end
 
     it "should allow registering independent loggers for classes in a hierarchy" do
-      defined?(Foo1).should be_false
-      defined?(Foo2).should be_false
+      defined?(Foo1).should be_falsey
+      defined?(Foo2).should be_falsey
       Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
       Lumber.setup_logger_hierarchy("Foo2", "root::foo2")
       new_class('Foo1')
@@ -124,38 +124,38 @@ describe Lumber do
     end
 
     it "should allow registering logger for a nested class before the class is defined" do
-      defined?(Bar1::Foo1).should be_false
+      defined?(Bar1::Foo1).should be_falsey
       Lumber.setup_logger_hierarchy("Bar1::Foo1", "root::foo1")
       new_class('Foo1', nil, 'Bar1')
       assert_valid_logger('Bar1::Foo1', "root::foo1")
     end
 
     it "should allow registering logger for a class after the class is defined" do
-      defined?(Foo1).should be_false
+      defined?(Foo1).should be_falsey
       new_class('Foo1')
-      defined?(Foo1).should be_true
+      defined?(Foo1).should be_truthy
 
       Lumber.setup_logger_hierarchy("Foo1", "root::Foo1")
       assert_valid_logger('Foo1', "root::Foo1")
     end
 
     it "should register loggers for subclasses of registered classes" do
-      defined?(Foo1).should be_false
-      defined?(Foo2).should be_false
-      defined?(Foo3).should be_false
+      defined?(Foo1).should be_falsey
+      defined?(Foo2).should be_falsey
+      defined?(Foo3).should be_falsey
       Lumber.setup_logger_hierarchy("Foo1", "root::Foo1")
       new_class('Foo1')
       new_class('Foo2', 'Foo1')
       new_class('Foo3')
       assert_valid_logger('Foo1', "root::Foo1")
       assert_valid_logger('Foo2', "root::Foo1::Foo2")
-      defined?(Foo3.logger).should be_false
+      defined?(Foo3.logger).should be_falsey
     end
 
     it "should register loggers for sub-subclasses of registered classes" do
-      defined?(Foo1).should be_false
-      defined?(Foo2).should be_false
-      defined?(Foo3).should be_false
+      defined?(Foo1).should be_falsey
+      defined?(Foo2).should be_falsey
+      defined?(Foo3).should be_falsey
       Lumber.setup_logger_hierarchy("Foo1", "root::Foo1")
       new_class('Foo1')
       new_class('Foo2', 'Foo1')
@@ -166,9 +166,9 @@ describe Lumber do
     end
 
     it "should register loggers for sub-subclasses of registered classes even when middle class not a logger" do
-      defined?(Foo1).should be_false
-      defined?(Foo2).should be_false
-      defined?(Foo3).should be_false
+      defined?(Foo1).should be_falsey
+      defined?(Foo2).should be_falsey
+      defined?(Foo3).should be_falsey
       new_class('Foo1')
       new_class('Foo2', 'Foo1')
       Lumber.setup_logger_hierarchy("Foo1", "root::Foo1")

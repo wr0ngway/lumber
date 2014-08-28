@@ -61,11 +61,11 @@ describe Lumber::InheritanceRegistry do
   describe "#remove_inheritance_handler" do
 
     it "should remove the handler" do
-      defined?(Object.inherited_with_lumber_registry).should be_false
+      defined?(Object.inherited_with_lumber_registry).should be_falsey
       InheritanceRegistry.register_inheritance_handler
-      defined?(Object.inherited_with_lumber_registry).should be_true
+      defined?(Object.inherited_with_lumber_registry).should be_truthy
       InheritanceRegistry.remove_inheritance_handler
-      defined?(Object.inherited_with_lumber_registry).should be_false
+      defined?(Object.inherited_with_lumber_registry).should be_falsey
     end
 
   end
@@ -77,18 +77,18 @@ describe Lumber::InheritanceRegistry do
     end
 
     it "adds an inheritance handler" do
-      defined?(Object.inherited_with_lumber_registry).should be_false
+      defined?(Object.inherited_with_lumber_registry).should be_falsey
       InheritanceRegistry.register_inheritance_handler
-      defined?(Object.inherited_with_lumber_registry).should be_true
+      defined?(Object.inherited_with_lumber_registry).should be_truthy
     end
 
     it "doesn't add an inheritance handler multiple times" do
       Object.singleton_class.should_receive(:alias_method_chain).once.and_call_original
-      defined?(Object.inherited_with_lumber_registry).should be_false
+      defined?(Object.inherited_with_lumber_registry).should be_falsey
       InheritanceRegistry.register_inheritance_handler
-      defined?(Object.inherited_with_lumber_registry).should be_true
+      defined?(Object.inherited_with_lumber_registry).should be_truthy
       InheritanceRegistry.register_inheritance_handler
-      defined?(Object.inherited_with_lumber_registry).should be_true
+      defined?(Object.inherited_with_lumber_registry).should be_truthy
     end
 
     it "doesn't change classes that aren't registered" do
