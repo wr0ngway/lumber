@@ -19,7 +19,7 @@ To enable lumber in your rails project, add to your config/application.rb:
 
     # To expose custom variables in log4r.yml
     # config.lumber.some_option = "some_value
-    # you can set default_log_level here, config/environments/*.rb or in config/log4r.yml 
+    # you can set default_log_level here, config/environments/*.rb or in config/log4r.yml
     # config.log_level = :debug
     # enabling lumber sets config.logger to Log4r::Logger['rails']
     config.lumber.enabled = true
@@ -30,25 +30,44 @@ You should be able to use lumber in a non-rails project too, but you will have t
     #
     require 'lumber'
     Lumber.init(:root => "/my/project", :env => "development")
-  
+
     # Setup parent loggers for some known rails Base classes.  Classes that inherit
     # from these will have their logger as a parent so you can configure logging for
     # subtrees of classes in log4r.yml
     Lumber.setup_logger_hierarchy("ActiveRecord::Base", "rails::models")
     Lumber.setup_logger_hierarchy("ActionController::Base", "rails::controllers")
     Lumber.setup_logger_hierarchy("ActionMailer::Base", "rails::mailers")
-  
+
     # If you really want, you can make all classes have a logger
     # Lumber.setup_logger_hierarchy("Object", "root::object")
 
-Additionally, you can also add loggers to individual classes by including the LumberLoggerSupport module
+Additionally, you can also add loggers to individual classes by including the Lumber::LoggerSupport module
 
     class Foo
       include Lumber::LoggerSupport
     end
 
-and Foo.logger/Foo.new.logger will log to a logger named "rails::Foo".  This creates a heirarchy of loggers for classes
-nested within modules, so you can use the namespace to enable/disable loggers
+and Foo.logger/Foo.new.logger will log to a logger named "rails::Foo".  This creates a hierarchy of loggers for classes
+nested within modules, so you can use the namespace to enable/disable loggers.
+
+The logger concern used by Lumber is customizeable:
+
+    module MyLoggerConcern
+      extend ActiveSupport::Concern
+      include Lumber::LoggerSupport
+
+      # an example custom logging function
+      def log_error(error)
+        logger.error("ERROR: #{error}")
+      end
+    end
+
+This custom logger concern should be registered in an initializer so that it is available dynamically:
+
+    # before Rails::Initializer.run
+    #
+    require 'lumber'
+    Lumber.logger_concern = MyLoggerConcern
 
 If you want to change the log level for a different environment, you can do so in log4r.yml or by using the standard rails "config.log_level" setting in config/environments/<env>.rb
 

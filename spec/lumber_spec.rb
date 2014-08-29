@@ -181,26 +181,52 @@ describe Lumber do
   end
 
   context "formatted MDC context" do
-    
+
     before(:each) do
       Log4r::MDC.get_context.keys.each {|k| Log4r::MDC.remove(k) }
     end
-    
+
     it "is empty for no context" do
       Lumber.format_mdc.should == ""
     end
-    
+
     it "has context vars" do
       Log4r::MDC.put("baz", "boo")
       Log4r::MDC.put("foo", "bar")
       Lumber.format_mdc.should == "baz=boo foo=bar"
     end
-    
+
     it "escapes %" do
       Log4r::MDC.put("%foo", "%bar")
       Lumber.format_mdc.should == "%%foo=%%bar"
     end
-    
+
   end
-  
+
+  context "using other Logging Concerns" do
+
+    before(:each) do
+      Log4r::MDC.get_context.keys.each {|k| Log4r::MDC.remove(k) }
+    end
+
+    # An example extension to LoggerSupport
+    module TestLoggingConcern
+      extend ActiveSupport::Concern
+      include Lumber::LoggerSupport
+
+      def custom_log_context
+        Log4r::MDC.put("baz", "boo")
+      end
+    end
+
+    it "should allow the logger concern to be changed" do
+      Lumber.logger_concern = TestLoggingConcern
+      Lumber.setup_logger_hierarchy("Foo1", "root::foo1")
+      new_class('Foo1')
+
+      assert_valid_logger('Foo1', "root::foo1")
+      Foo1.new.custom_log_context
+      Lumber.format_mdc.should == "baz=boo"
+    end
+  end
 end
