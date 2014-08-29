@@ -1,3 +1,10 @@
+1.2.2 (08/29/2014)
+------------------
+
+Pluggable logger concerns - pull request #11 from ANorwell/logger_concerns <03d0724> [Matt Conway]
+fix tests for newer rspec <033c3d6> [Matt Conway]
+test against 2.1.2 <8c40685> [Matt Conway]
+
 1.2.1 (03/13/2014)
 ------------------
 
