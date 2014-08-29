@@ -56,7 +56,6 @@ module Lumber
     opts[:log_file] ||= "#{opts[:root]}/log/#{opts[:env]}.log"
     opts[:monitor_enabled] = true unless opts[:monitor_enabled] == false
     opts[:monitor_interval] ||= 60
-    opts[:logger_concern] ||= Lumber.logger_concern
 
     raise "Lumber.init missing one of :root, :env" unless opts[:root] && opts[:env]
 
@@ -68,7 +67,7 @@ module Lumber
 
     cfg.load_yaml_file(opts[:config_file])
 
-    self.logger_concern = opts[:logger_concern]
+    self.logger_concern = opts[:logger_concern] if opts[:logger_concern]
 
     # Workaround for rails bug: http://dev.rubyonrails.org/ticket/8665
     if defined?(RAILS_DEFAULT_LOGGER)
